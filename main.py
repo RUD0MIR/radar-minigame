@@ -1,74 +1,83 @@
 from pygame.locals import *
-from operator import add, sub
 import pygame
 import sys
-import math
-import random
-
 from pytmx import load_pygame
-
-from map import Map, Line
+from map import Map
 from rays import Rays
 
-pygame.init()
 
-# -----Options-----
-WINDOW_SIZE = (1920, 1080)  # Width x Height in pixels
-NUM_RAYS = 150  # Must be between 1 and 360
-SOLID_RAYS = False  # Can be somewhat glitchy. For best results, set NUM_RAYS to 360
-NUM_WALLS = 5  # The amount of randomly generated walls
-# ------------------
+class Game:
+    def __init__(self):
+        pygame.init()
 
-screen = pygame.display.set_mode(WINDOW_SIZE)
-clock = pygame.time.Clock()
+        self.running = True
+        self.debug = False
+
+        # drawing related stuff
+        self.colors = {
+            'text': (231, 111, 81),
+            'background': (0, 0, 0),
+            'player': (244, 162, 97)
+        }
+
+        self.font = pygame.font.SysFont('Arial', 20)
+
+        self.fps = 60
+        self.clock = pygame.time.Clock()
+
+        self.screen_width, self.screen_height = 1920, 1080
+        self.screen_dimensions = (self.screen_width, self.screen_height)
+        self.screen = pygame.display.set_mode(self.screen_dimensions)
+
+        self.render_width, self.render_height = 1920, 1080
+        self.render_dimensions = (self.render_width, self.render_height)
+        self.render_surface = pygame.Surface(self.render_dimensions)
+
+        # player related
+        self.player_position = [1920 / 2, 1080 / 2]
+        self.player_speed = 2
+
+        # other objects
+        self._map = Map(load_pygame("sonar_sample_map.tmx"), self.render_surface)
+        self.rays = Rays(self._map.lines, self.render_surface)
+
+    def run(self):
+        while self.running:
+            self.clock.tick(self.fps)
+            self.handle_input()
+
+            self._map.draw_lines()
+            self.rays.draw_rays()
+            self.rays.update(self.player_position)
+
+            # draw player position
+            pygame.draw.circle(self.render_surface, self.colors['player'], self.player_position, 8)
+
+            self.render_surface.blit(
+                self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, self.colors['text']), (5, 5))
+            self.screen.blit(pygame.transform.scale(self.render_surface, self.screen_dimensions), (0, 0))
+            pygame.display.update()
+            self.render_surface.fill(self.colors['background'])
+
+    def handle_input(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.running = False
+
+                elif event.key == pygame.K_f:
+                    if self.debug:
+                        self.debug = False
+                    else:
+                        self.debug = True
+
+        if pygame.mouse.get_pressed()[0]:
+            self.player_position = pygame.mouse.get_pos()
 
 
-running = True
-# walls = []
-
-
-
-
-
-# def generateWalls():
-#     walls.clear()
-#
-#     walls.append(Wall((0, 0), (WINDOW_SIZE[0], 0)))
-#     walls.append(Wall((0, 0), (0, WINDOW_SIZE[1])))
-#     walls.append(Wall((WINDOW_SIZE[0], 0), (WINDOW_SIZE[0], WINDOW_SIZE[1])))
-#     walls.append(Wall((0, WINDOW_SIZE[1]), (WINDOW_SIZE[0], WINDOW_SIZE[1])))
-#
-#     for i in range(NUM_WALLS):
-#         start_x = random.randint(0, WINDOW_SIZE[0])
-#         start_y = random.randint(0, WINDOW_SIZE[1])
-#         end_x = random.randint(0, WINDOW_SIZE[0])
-#         end_y = random.randint(0, WINDOW_SIZE[1])
-#         walls.append(Wall((start_x, start_y), (end_x, end_y)))
-
-
-_map = Map(load_pygame("sonar_sample_map.tmx"), screen)
-rays = Rays(_map.lines, screen)
-
-
-def draw():
-    screen.fill((0, 0, 0))
-
-    _map.draw_lines()
-    rays.draw_rays()
-
-    pygame.display.update()
-
-
-# generateWalls()
-
-while running:
-    mouse_pos = pygame.mouse.get_pos()
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
-
-    rays.update(mouse_pos)
-
-    draw()
-    clock.tick(60)
+if __name__ == '__main__':
+    app = Game()
+    app.run()
