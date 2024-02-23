@@ -2,10 +2,13 @@ from pygame.locals import *
 import pygame
 import sys
 from pytmx import load_pygame
-from map import Map
+
+from map import Wall, Walls
 from rays import Rays
 
 
+# TODO optimize rays and lines iterations
+# TODO add camera, player and collision for player
 class Game:
     def __init__(self):
         pygame.init()
@@ -38,20 +41,22 @@ class Game:
         self.player_speed = 2
 
         # other objects
-        self._map = Map(load_pygame("sonar_sample_map.tmx"), self.render_surface)
-        self.rays = Rays(self._map.lines, self.render_surface)
+        self.walls = Walls(self.render_surface, load_pygame("sonar_map.tmx"))
+        self.rays = Rays(self.render_surface, self.player_position, self.walls)
 
     def run(self):
         while self.running:
             self.clock.tick(self.fps)
             self.handle_input()
 
-            self._map.draw_lines()
-            self.rays.draw_rays()
-            self.rays.update(self.player_position)
+            self.walls.update()
+            self.walls.draw(self.render_surface)
+
+            self.rays.update()
+            self.rays.draw(self.render_surface)
 
             # draw player position
-            pygame.draw.circle(self.render_surface, self.colors['player'], self.player_position, 8)
+            # pygame.draw.circle(self.render_surface, self.colors['player'], self.player_position, 8)
 
             self.render_surface.blit(
                 self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, self.colors['text']), (5, 5))
@@ -74,8 +79,8 @@ class Game:
                     else:
                         self.debug = True
 
-        if pygame.mouse.get_pressed()[0]:
-            self.player_position = pygame.mouse.get_pos()
+        # if pygame.mouse.get_pressed()[0]:
+        #     self.player_position = pygame.mouse.get_pos()
 
 
 if __name__ == '__main__':

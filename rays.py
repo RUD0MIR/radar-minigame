@@ -1,106 +1,65 @@
+import itertools
 import math
+import multiprocessing
+from operator import itemgetter
 
 import pygame
-
-from map import Line
-
-
-class Ray:
-    def __init__(self, mouse_pos, angle):
-        self.x = mouse_pos[0]
-        self.y = mouse_pos[1]
-        self.dir = (math.cos(angle), math.sin(angle))
-
-    def update(self, mouse_pos):
-        self.x = mouse_pos[0]
-        self.y = mouse_pos[1]
-
-    def checkCollision(self, line: Line):
-        x1 = line.start_pos[0]
-        y1 = line.start_pos[1]
-        x2 = line.end_pos[0]
-        y2 = line.end_pos[1]
-
-        x3 = self.x
-        y3 = self.y
-        x4 = self.x + self.dir[0]
-        y4 = self.y + self.dir[1]
-
-        # Using line-line intersection formula to get intersection point of ray and line
-        # Where (x1, y1), (x2, y2) are the ray pos and (x3, y3), (x4, y4) are the line pos
-        denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
-        numerator = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)
-
-        if denominator == 0:
-            return None
-
-        t = numerator / denominator
-        u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denominator
-
-        if 1 > t > 0 and u > 0:
-            x = x1 + t * (x2 - x1)
-            y = y1 + t * (y2 - y1)
-            collidePos = [x, y]
-            return collidePos
+from pygame import Surface
+from pygame.sprite import Group
 
 
-# TODO get data from tmx, by points, and pass it to this class
-
-
-class Rays:
-    def __init__(self, lines: list[Line], surface):
+class Ray(pygame.sprite.Sprite):
+    def __init__(self, surface: Surface, start_pos, angle, group: Group, walls: Group):
+        super().__init__(group)
         self.surface = surface
-        self.lines = lines
-        self.mouse_pos = pygame.mouse.get_pos()
+
+        self.start_pos = start_pos
+        self.len = 0
+        self.angle = angle
+        self.end_pos = (self.start_pos[0] + self.len * math.cos(self.angle), self.start_pos[1] + self.len * math.sin(self.angle))
+
+        self.walls = walls
+
+        self.rect = pygame.draw.line(self.surface, 'red', self.start_pos, self.end_pos)
+        self.image = pygame.Surface((0, 0), pygame.SRCALPHA)
+
+    '''
+    calculating ray end point with these formulas
+    x = x0 + R * cos(a)
+    y = y0 + R * sin(a)
+    '''
+    # def calculate_end_pos(self):
+    #     x =
+    #     y =
+    #     self.end_pos = x, y
+
+    def update(self):
+
+        if not pygame.sprite.spritecollideany(self, self.walls):
+            self.len += 1
+            self.end_pos = (
+                self.start_pos[0] + self.len * math.cos(self.angle), self.start_pos[1] + self.len * math.sin(self.angle)
+            )
+        else:
+            pygame.draw.rect(self.surface, 'red', (self.end_pos, (5, 5)))
+        self.rect = pygame.draw.line(self.surface, 'red', self.start_pos, self.end_pos)
+
+
+class Rays(pygame.sprite.Group):
+    def __init__(self, surface, start_pos, walls):
+        super().__init__()
+        self.surface = surface
+        self.start_pos = start_pos
         self.rays = []
-        self.rays_color = (0, 0, 0, 0)
+        self.walls = walls
+        self.rays_color = 'white'
         self.rays_count = 360
-
-        self.closest_multiplier = 0
-        self.max_closest_multiplier = 200
-        self.closest_increase = 2
-
-        self.lastClosestPoint = (0, 0)
-
         self.generate_rays()
 
     def generate_rays(self):
-        for i in range(0, 360, int(360 / self.rays_count)):
-            self.rays.append(Ray(self.mouse_pos, math.radians(i)))
+        for i in range(self.rays_count):
+            Ray(self.surface, self.start_pos, i, self, self.walls)
 
-    def draw_rays(self):  # (0, 0, 0, 0)
-        for ray in self.rays:
-            closest = 10 * self.closest_multiplier
-            closest_point = None
-            for line in self.lines:
-                intersect_point = ray.checkCollision(line)
-                if intersect_point is not None:
-                    # Get distance between ray source and intersect point
-                    ray_dx = ray.x - intersect_point[0]
-                    ray_dy = ray.y - intersect_point[1]
-
-                    # If the intersect point is closer than the previous closest intersect point, it becomes the
-                    # closest intersect point
-                    distance = math.sqrt(ray_dx ** 2 + ray_dy ** 2)
-                    if distance < closest:  # self.rays_length
-                        # self.rays_length = distance
-                        closest = distance
-                        closest_point = intersect_point
-
-            if closest_point is not None:
-                pygame.draw.rect(self.surface, 'Red', (closest_point, (5, 5)))
-                # pygame.draw.line(self.surface, self.rays_color, (ray.x, ray.y), closest_point)
-
-
-    def rays_pulse(self):
-        if self.closest_multiplier == self.max_closest_multiplier:
-            self.closest_multiplier = 0
-        else:
-            self.closest_multiplier += self.closest_increase
-
-    def update(self, mouse_pos):
-        self.rays_pulse()
-
-        if self.closest_multiplier == 0:
-            for ray in self.rays:
-                ray.update(mouse_pos)
+    def draw(self, surface, bgsurf=None, special_flags=0):
+        for sprite in self.sprites():
+            self.surface.blit(sprite.image, sprite.rect)

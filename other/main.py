@@ -2,8 +2,6 @@ import pygame
 from map import Map
 from pytmx.util_pygame import load_pygame
 
-from ray import Rays
-
 
 class Game:
     def __init__(self):
@@ -46,7 +44,7 @@ class Game:
             self.handle_input()
 
             self.map.draw_obstacles(self.render_surface)
-            self.rays.draw_rays(self.player_position)
+            self.rays.generate_rays()
 
             # draw player position
             pygame.draw.circle(self.render_surface, self.colors['player'], self.player_position, 8)

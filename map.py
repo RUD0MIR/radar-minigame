@@ -1,45 +1,35 @@
 import math
 
 import pygame
+from pygame import Surface, Rect
+from pygame.sprite import Group
 from pytmx.pytmx import Point
 from shapely import geometry, ops
 
 
-class Line:
-    def __init__(self, start_pos, end_pos):
-        self.start_pos = start_pos
-        self.end_pos = end_pos
-        self.slope_x = end_pos[0] - start_pos[0]
-        self.slope_y = end_pos[1] - start_pos[1]
-        if self.slope_x == 0:
-            self.slope = 0
-        else:
-            self.slope = self.slope_y / self.slope_x
-        self.length = math.sqrt(self.slope_x ** 2 + self.slope_y ** 2)
+class Wall(pygame.sprite.Sprite):
+    def __init__(self, rect: Rect, group: Group):
+        super().__init__(group)
+        self.rect = rect
+        self.image = pygame.Surface((self.rect.width, self.rect.height))
+        self.image.fill('white')
 
 
-class Map:
-    def __init__(self, tmx_data, surface):
-        # self.lines_color = (0, 0, 0, 0)
-        self.lines_color = 'white'
+class Walls(pygame.sprite.Group):
+    def __init__(self, surface, tmx_data):
+        # self.color = (0, 0, 0, 0)
+        super().__init__()
         self.surface = surface
+        self.color = 'white'
+
         self.tmx_data = tmx_data
-        self.lines = []
+        self.get_rects_from_tmx()
+        print(len(self.sprites()))
 
-        self.get_lines_from_tmx()
-
-    def get_lines_from_tmx(self):
+    def get_rects_from_tmx(self):
         for obj in self.tmx_data.objects:
+            Wall(pygame.Rect(obj.x, obj.y, obj.width, obj.height), self)
 
-            points = obj.as_points
-            for i in range(0, len(points)):
-                if i + 1 < len(points):
-                    line = Line((points[i].x, points[i].y), (points[i + 1].x, points[i + 1].y))
-                    self.lines.append(line)
-                elif i + 1 == len(points):
-                    line = Line((points[i].x, points[i].y), (points[0].x, points[0].y))
-                    self.lines.append(line)
-
-    def draw_lines(self):
-        for line in self.lines:
-            pygame.draw.line(self.surface, self.lines_color, line.start_pos, line.end_pos, width=3)
+    def draw(self, surface, bgsurf=None, special_flags=0):
+        for sprite in self.sprites():
+            self.surface.blit(sprite.image, sprite)

@@ -10,7 +10,7 @@ pygame.init()
 # -----Options-----
 WINDOW_SIZE = (1200, 800)  # Width x Height in pixels
 NUM_RAYS = 150  # Must be between 1 and 360
-SOLID_RAYS = False  # Can be somewhat glitchy. For best results, set NUM_RAYS to 360
+SOLID_RAYS = True  # Can be somewhat glitchy. For best results, set NUM_RAYS to 360
 NUM_WALLS = 5  # The amount of randomly generated walls
 # ------------------
 
