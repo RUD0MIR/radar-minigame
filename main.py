@@ -6,8 +6,9 @@ from pytmx import load_pygame
 from map import Wall, Walls
 from rays import Rays
 
+# TODO remove cringe rays
+# TODO send rects along a linear trajectory, in case of collision, show them
 
-# TODO optimize rays and lines iterations
 # TODO add camera, player and collision for player
 class Game:
     def __init__(self):
@@ -49,11 +50,10 @@ class Game:
             self.clock.tick(self.fps)
             self.handle_input()
 
-            self.walls.update()
             self.walls.draw(self.render_surface)
-
-            self.rays.update()
             self.rays.draw(self.render_surface)
+            self.rays.update()
+            self.walls.update()
 
             # draw player position
             # pygame.draw.circle(self.render_surface, self.colors['player'], self.player_position, 8)
