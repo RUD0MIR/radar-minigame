@@ -13,7 +13,6 @@ class Wall(pygame.sprite.Sprite):
         self.rect = rect
         self.image = pygame.Surface((self.rect.width, self.rect.height))
         self.image.fill('white')
-        self.mask = pygame.mask.from_surface(self.image)
 
 
 class Walls(pygame.sprite.Group):
@@ -21,7 +20,6 @@ class Walls(pygame.sprite.Group):
         # self.color = (0, 0, 0, 0)
         super().__init__()
         self.surface = surface
-        self.color = 'white'
 
         self.tmx_data = tmx_data
         self.get_rects_from_tmx()

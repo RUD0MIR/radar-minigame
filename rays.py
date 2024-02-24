@@ -13,41 +13,36 @@ class Ray(pygame.sprite.Sprite):
         super().__init__(group)
 
         self.start_pos = start_pos
-        self.len = 1000
-        self.angle = 10#angle
-        self.end_pos = (
-            self.start_pos[0] + 100, self.start_pos[1] + 100
-        )
-        #self.start_pos[0] + self.len * math.cos(self.angle), self.start_pos[1] + self.len * math.sin(self.angle)
+        self.len = 0
+        self.angle = angle
+        self.rect_pos = start_pos
 
         self.walls = walls
 
+        self.rect = pygame.Rect(self.rect_pos[0], self.rect_pos[1], 3, 3)
         self.image = pygame.Surface(
-            (100, 100), pygame.SRCALPHA
+            (self.rect.width, self.rect.height)  # , pygame.SRCALPHA
         )
-        self.image.fill('white')
-        pygame.draw.line(self.image, 'red',(0,0), (100, 100))# self.start_pos, self.end_po
-
-        #abs(self.end_pos[0] - self.start_pos[0]), abs(self.end_pos[1]  -  self.start_pos[1]))
-        self.rect = pygame.Rect(0, 0, 1920, 1080)
-        self.mask = pygame.mask.from_surface(self.image)
+        self.image.fill('green')
 
     '''
     calculating ray end point with these formulas
     x = x0 + R * cos(a)
     y = y0 + R * sin(a)
     '''
+    def move_rect(self):
+        self.len += 1
+        self.rect_pos = (
+            self.start_pos[0] + self.len * math.cos(self.angle), self.start_pos[1] + self.len * math.sin(self.angle)
+        )
+
+        self.rect = pygame.Rect(self.rect_pos[0], self.rect_pos[1], 3, 3)
 
     def update(self):
         if pygame.sprite.spritecollideany(self, self.walls):
-            if pygame.sprite.spritecollideany(self, self.walls, pygame.sprite.collide_mask):
-                pygame.draw.rect(Surface((5, 5)), 'red', (self.end_pos, (5, 5)))
+            self.image.fill('red')
         else:
-            pass
-        self.len += 1
-        self.end_pos = (
-            self.start_pos[0] + self.len * math.cos(self.angle), self.start_pos[1] + self.len * math.sin(self.angle)
-        )
+            self.move_rect()
 
 
 class Rays(pygame.sprite.Group):
@@ -58,13 +53,9 @@ class Rays(pygame.sprite.Group):
         self.rays = []
         self.walls = walls
         self.rays_color = 'white'
-        self.rays_count = 1
+        self.rays_count = 360
         self.generate_rays()
 
     def generate_rays(self):
         for i in range(self.rays_count):
             Ray(self.start_pos, i, self, self.walls)
-
-    def draw( self, surface, bgsurf=None, special_flags=0):
-        for sprite in self.sprites():
-            surface.blit(sprite.image, sprite.rect)

@@ -38,8 +38,8 @@ class Ray:
     def checkCollision(self, wall):
         x1 = wall.start_pos[0]
         y1 = wall.start_pos[1]
-        x2 = wall.end_pos[0]
-        y2 = wall.end_pos[1]
+        x2 = wall.rect_pos[0]
+        y2 = wall.rect_pos[1]
 
         x3 = self.x
         y3 = self.y

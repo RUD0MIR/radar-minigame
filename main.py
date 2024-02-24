@@ -6,6 +6,7 @@ from pytmx import load_pygame
 from map import Wall, Walls
 from rays import Rays
 
+
 # TODO remove cringe rays
 # TODO send rects along a linear trajectory, in case of collision, show them
 
@@ -38,11 +39,12 @@ class Game:
         self.render_surface = pygame.Surface(self.render_dimensions)
 
         # player related
-        self.player_position = [1920 / 2, 1080 / 2]
+        self.player_position = [500, 300]
         self.player_speed = 2
 
         # other objects
-        self.walls = Walls(self.render_surface, load_pygame("sonar_map.tmx"))
+        # self.walls = Walls(self.render_surface, load_pygame("sonar_map.tmx"))
+        self.walls = Walls(self.render_surface, load_pygame("testMap1.tmx"))
         self.rays = Rays(self.render_surface, self.player_position, self.walls)
 
     def run(self):
