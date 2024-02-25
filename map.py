@@ -12,7 +12,16 @@ class Wall(pygame.sprite.Sprite):
         super().__init__(group)
         self.rect = rect
         self.image = pygame.Surface((self.rect.width, self.rect.height))
-        self.image.fill('white')
+        self.image.fill('#0f0f0f')
+
+
+class Exits(pygame.sprite.Sprite):
+    def __init__(self, pos, group):
+        super().__init__(group)
+        # TODO add exits mechanic
+        # self.image = pygame.image.load(f"exits.png").convert_alpha()
+        # self.rect = self.image.get_rect(topleft=pos)
+        # self.mask = pygame.mask.from_surface(self.image)
 
 
 class Walls(pygame.sprite.Group):

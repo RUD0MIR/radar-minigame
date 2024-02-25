@@ -3,15 +3,13 @@ import pygame
 import sys
 from pytmx import load_pygame
 
+from camera import CameraGroup
 from map import Wall, Walls
-from sprite import Player
-from sprite_group import CameraGroup, Rays
+from player import Player
+from rays import Rays
 
 
-# TODO remove cringe rays
-# TODO send rects along a linear trajectory, in case of collision, show them
-
-# TODO add camera, player and collision for player
+# TODO add rays to camera
 class Game:
     def __init__(self):
         pygame.init()
@@ -23,7 +21,7 @@ class Game:
         # drawing related stuff
         self.colors = {
             'text': (231, 111, 81),
-            'background': (0, 0, 0),
+            'background': '#0f0f0f',
             'player': (244, 162, 97)
         }
 
@@ -50,23 +48,19 @@ class Game:
 
         self.camera_group = CameraGroup()
 
-        self.player_position = [1920 // 2, 1080 // 2]
-        self.player = Player(self.player_position, self.walls, self.camera_group)
+        self.initial_player_position = [220, 1000]
+        self.player = Player(self.initial_player_position, self.walls, self.camera_group)
 
-        self.rays = Rays(self.screen, self.player_position, self.walls)
+        self.rays = Rays(self.screen, self.initial_player_position, self.walls)
 
     def run(self):
         while self.running:
             self.clock.tick(self.fps)
             self.handle_input()
-
-            # self.walls.draw(self.render_surface)
-            self.rays.draw(self.screen)
-            self.rays.update()
+            self.rays.custom_update(self.player.rect)
 
             self.camera_group.update()
-            self.camera_group.custom_draw(self.player, self.walls)
-            # self.walls.update()
+            self.camera_group.custom_draw(self.player, self.walls, self.rays)
 
             self.screen.blit(
                 self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, self.colors['text']), (5, 5)

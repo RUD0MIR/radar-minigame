@@ -1,8 +1,6 @@
 import pygame
 from pygame.sprite import Group
 
-from sprite import Ray
-
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):
@@ -23,7 +21,7 @@ class CameraGroup(pygame.sprite.Group):
         self.offset.x = target.rect.centerx - self.half_w
         self.offset.y = target.rect.centery - self.half_h
 
-    def custom_draw(self, player, walls: Group):
+    def custom_draw(self, player, walls: Group, rays: Group):
         self.center_target_camera(player)
         # active elements
         for sprite in self.sprites():
@@ -34,29 +32,8 @@ class CameraGroup(pygame.sprite.Group):
             offset_pos = wall.rect.topleft - self.offset
             self.surface.blit(wall.image, offset_pos)
 
+        for ray in rays.sprites():
+            offset_pos = ray.rect.topleft - self.offset
+            self.surface.blit(ray.image, offset_pos)
+
         self.surface.blit(self.kpk, (0, 0))
-
-
-class Rays(pygame.sprite.Group):
-    def __init__(self, surface, start_pos, walls):
-        super().__init__()
-        self.surface = surface
-        self.start_pos = start_pos
-        self.rays = []
-        self.walls = walls
-        self.rays_color = 'white'
-        self.rays_count = 360
-        self.generate_rays()
-
-    def generate_rays(self):
-        for i in range(self.rays_count):
-            Ray(self.start_pos, i, self, self.walls)
-
-
-class Exits(pygame.sprite.Sprite):
-    def __init__(self, pos, group):
-        super().__init__(group)
-        # TODO add exits mechanic
-        # self.image = pygame.image.load(f"exits.png").convert_alpha()
-        # self.rect = self.image.get_rect(topleft=pos)
-        # self.mask = pygame.mask.from_surface(self.image)
