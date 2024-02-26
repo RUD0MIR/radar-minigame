@@ -4,7 +4,7 @@ import sys
 from pytmx import load_pygame
 
 from camera import CameraGroup
-from map import Wall, Walls
+from map import Wall, Walls, Markers
 from player import Player
 from rays import Rays
 
@@ -44,13 +44,16 @@ class Game:
         self.kpk = pygame.image.load(f"res/kpk.png").convert_alpha()
 
         # objects
-        self.walls = Walls(self.screen, load_pygame("res/testMap1.tmx"))
+        tmx_map = load_pygame("res/cave.tmx")
+        self.walls = Walls(self.screen, tmx_map)
+
 
         self.camera_group = CameraGroup()
 
         self.initial_player_position = [220, 1000]
         self.player = Player(self.initial_player_position, self.walls, self.camera_group)
 
+        self.map_graphics = Markers(self.screen, tmx_map, self.player)
         self.rays = Rays(self.screen, self.initial_player_position, self.walls)
 
     def run(self):
@@ -58,9 +61,10 @@ class Game:
             self.clock.tick(self.fps)
             self.handle_input()
             self.rays.custom_update(self.player.rect)
+            self.map_graphics.update(self.player)
 
             self.camera_group.update()
-            self.camera_group.custom_draw(self.player, self.walls, self.rays)
+            self.camera_group.custom_draw(self.player, [self.walls, self.rays, self.map_graphics])
 
             self.screen.blit(
                 self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, self.colors['text']), (5, 5)

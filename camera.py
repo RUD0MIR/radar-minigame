@@ -21,19 +21,16 @@ class CameraGroup(pygame.sprite.Group):
         self.offset.x = target.rect.centerx - self.half_w
         self.offset.y = target.rect.centery - self.half_h
 
-    def custom_draw(self, player, walls: Group, rays: Group):
+    def custom_draw(self, player, groups: list[Group]):
         self.center_target_camera(player)
         # active elements
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset
             self.surface.blit(sprite.image, offset_pos)
 
-        for wall in walls.sprites():
-            offset_pos = wall.rect.topleft - self.offset
-            self.surface.blit(wall.image, offset_pos)
-
-        for ray in rays.sprites():
-            offset_pos = ray.rect.topleft - self.offset
-            self.surface.blit(ray.image, offset_pos)
+        for group in groups:
+            for sprite in group.sprites():
+                offset_pos = sprite.rect.topleft - self.offset
+                self.surface.blit(sprite.image, offset_pos)
 
         self.surface.blit(self.kpk, (0, 0))
