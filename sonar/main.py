@@ -66,6 +66,8 @@ class Game:
             self.camera_group.update()
             self.camera_group.custom_draw(self.player, [self.walls, self.rays, self.map_graphics])
 
+            print(pygame.mouse.get_pos())
+
             self.screen.blit(
                 self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, self.colors['text']), (5, 5)
             )
