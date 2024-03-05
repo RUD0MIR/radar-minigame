@@ -3,7 +3,8 @@ import pygame
 import sys
 from pytmx import load_pygame
 
-from enemy import Enemy
+from ai.map import Walls
+from enemy import Enemy, Enemies
 from sonar.camera import CameraGroup
 from player import Player
 
@@ -32,7 +33,11 @@ class Game:
         self.screen = pygame.display.set_mode(self.screen_dimensions)
 
         self.player = Player((500, 300))
-        self.enemy = Enemy((600 // 2, 500 // 2), self.player)
+
+        tmx_map = load_pygame("test_map.tmx")
+        self.walls = Walls(self.screen, tmx_map)
+
+        self.enemies = Enemies(self.player, self.walls)
 
     def run(self):
         while self.running:
@@ -43,8 +48,11 @@ class Game:
                 self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, self.colors['text']), (5, 5)
             )
 
-            self.screen.blit(self.enemy.image, self.enemy.rect)
-            self.enemy.update((self.player.rect.x, self.player.rect.y))
+            self.walls.draw(self.screen)
+            self.walls.update()
+
+            self.enemies.draw(self.screen)
+            self.enemies.update((self.player.rect.x, self.player.rect.y))
 
             self.screen.blit(self.player.image, self.player.rect)
             self.player.update(pygame.mouse.get_pos())
