@@ -20,15 +20,32 @@ class Marker(pygame.sprite.Sprite):
     def __init__(self, rect: Rect, group: Group):
         super().__init__(group)
         self.rect = rect
-        self.image = pygame.image.load('res/marker.png').convert_alpha()
+        self.frames = []
+        self.load_frames()
+        self.anim_index = 0
+        self.image = self.frames[self.anim_index]
+
+    def load_frames(self):
+        for i in range(1, 7):
+            image = pygame.image.load(f'res/animated_sprite/marker/{i}.png').convert_alpha()
+            smaller_image = pygame.transform.smoothscale(image, (35, 35))
+            self.frames.append(smaller_image)
 
     def on_collide(self, player):
         if pygame.sprite.collide_rect(player, self):
-            self.image.fill('green')
-        else:
-            self.image = pygame.image.load('res/marker.png')
+            pass
+            # TODO on collide
+
+    def proceed_animation(self):
+        self.anim_index += 0.12
+        if self.anim_index > len(self.frames):
+            self.anim_index = 0
+
+        print(int(self.anim_index))
+        self.image = self.frames[int(self.anim_index)]
 
     def update(self, player):
+        self.proceed_animation()
         self.on_collide(player)
 
 

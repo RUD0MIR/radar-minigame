@@ -32,10 +32,12 @@ class Game:
         self.screen_dimensions = (self.screen_width, self.screen_height)
         self.screen = pygame.display.set_mode(self.screen_dimensions)
 
-        self.player = Player((500, 300))
+
 
         tmx_map = load_pygame("test_map.tmx")
         self.walls = Walls(self.screen, tmx_map)
+
+        self.player = Player((500, 300), self.walls)
 
         self.enemies = Enemies(self.player, self.walls)
 
