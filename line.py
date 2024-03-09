@@ -24,13 +24,14 @@ class Line:
         return math.sqrt((p1[0] - p0[0]) ** 2 + (p1[1] - p0[1]) ** 2)
 
     def is_point_on_line(self, p):
+        if self.d == 0:
+            return
         dt = self.get_distance(self.p0, p)
         t = dt / self.d
-        print(t)
         return 0 < t < 1
 
     def x_vector_direction(self):
-        return self.p0[0] - self.p1[1]
+        return self.p0[0] - self.p1[0]
 
     def y_vector_direction(self):
         return self.p0[1] - self.p1[1]
