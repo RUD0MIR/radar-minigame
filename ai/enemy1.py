@@ -13,12 +13,12 @@ class Enemy1(pygame.sprite.Sprite):
         self.cell_size = 10
         self.size = (10, 10)
         self.image = pygame.Surface(self.size, pygame.SRCALPHA)
-        self.image.fill('blue')  # (0,0,0,0)
+        self.image.fill('blue')
         self.rect = pygame.Rect(default_pos, self.size)
 
         # movement
         self.pos = self.rect.center
-        self.speed = 3
+        self.speed = 1.2
         self.direction = pygame.math.Vector2(0, 0)
 
         # path
@@ -33,14 +33,13 @@ class Enemy1(pygame.sprite.Sprite):
         self.path = []
 
     # call on rays pulse
-    def find_path(self):
+    def find_path(self, player_pos):
         # start
         start_x, start_y = self.rect.centerx // self.cell_size, self.rect.centery // self.cell_size
         start = self.grid.node(start_x, start_y)
 
         # end
-        mouse_pos = pygame.mouse.get_pos()
-        end_x, end_y = mouse_pos[0] // self.cell_size, mouse_pos[1] // self.cell_size
+        end_x, end_y = player_pos[0] // self.cell_size, player_pos[1] // self.cell_size
         end = self.grid.node(end_x, end_y)
 
         # path
@@ -70,13 +69,13 @@ class Enemy1(pygame.sprite.Sprite):
                 self.path_points.append(rect)
 
     def get_direction(self):
-        if self.path_points:
+        if len(self.path_points) > 1:
             start = pygame.math.Vector2(self.pos)
-            end = pygame.math.Vector2(self.path_points[0].center)
-            if start == end:
-                self.direction = pygame.math.Vector2(0, 0)
-            else:
-                self.direction = (end - start).normalize()
+
+            # using [1] not [0] to avoid inconsistent random direction bug
+            end = pygame.math.Vector2(self.path_points[1].center)
+
+            self.direction = (end - start).normalize()
         else:
             self.direction = pygame.math.Vector2(0, 0)
             self.path = []
@@ -87,8 +86,8 @@ class Enemy1(pygame.sprite.Sprite):
                 if rect.collidepoint(self.pos):
                     del self.path_points[0]
                     self.get_direction()
-        # else:
-        #     self.empty_path()
+        else:
+            self.empty_path()
 
     def update(self):
         self.pos += self.direction * self.speed

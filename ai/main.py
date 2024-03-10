@@ -36,7 +36,7 @@ class Game:
         tmx_map = load_pygame("ai_pathfinding_tilemap.tmx")
         self.walls = Walls(self.screen, tmx_map)
 
-        self.player = Player((500, 300), self.walls)
+        self.player = Player((550, 100), self.walls)
 
         # self.enemies = Enemies(self.player, self.walls, self.screen)
         self.enemy = Enemy1(test_pathfinding_grid, (50, 280))
@@ -60,8 +60,8 @@ class Game:
             # self.enemies.draw(self.screen)
             # self.enemies.update((self.player.rect.x, self.player.rect.y))
 
-            # self.screen.blit(self.player.image, self.player.rect)
-            # self.player.update(pygame.mouse.get_pos())
+            self.screen.blit(self.player.image, self.player.rect)
+            self.player.update(pygame.mouse.get_pos())
 
             pygame.display.update()
             self.screen.fill(self.colors['background'])
@@ -71,8 +71,7 @@ class Game:
             if event.type == pygame.QUIT:
                 self.running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                self.enemy.find_path()
-
+                self.enemy.find_path((self.player.rect.x, self.player.rect.y))
 
 
 if __name__ == '__main__':
