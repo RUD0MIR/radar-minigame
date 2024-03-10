@@ -39,7 +39,7 @@ class Game:
         self.player = Player((550, 100), self.walls)
 
         # self.enemies = Enemies(self.player, self.walls, self.screen)
-        self.enemy = Enemy1(test_pathfinding_grid, (50, 280))
+        self.enemy = Enemy1(test_pathfinding_grid, (50, 280), self.walls, self.screen)
 
     def run(self):
         while self.running:
@@ -51,7 +51,7 @@ class Game:
             )
 
             self.screen.blit(self.enemy.image, self.enemy.rect)
-            self.enemy.update()
+            self.enemy.update(self.player)
             self.enemy.draw_path(self.screen)
 
             self.walls.draw(self.screen)
