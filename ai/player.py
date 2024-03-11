@@ -13,7 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
         self.direction = pygame.math.Vector2()
-        self.speed = 4#1
+        self.speed = 1#1
 
         self.walls = walls
 

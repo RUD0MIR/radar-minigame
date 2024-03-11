@@ -20,12 +20,13 @@ class Enemy1(pygame.sprite.Sprite):
         self.rect = pygame.Rect(default_pos, self.size)
 
         self.fov_radius = 20
+        self.seen_player = False
         self.walls = walls
         self.screen = screen
 
         # movement
         self.pos = self.rect.center
-        self.speed = 0.5
+        self.speed = 0
         self.direction = pygame.math.Vector2(0, 0)
 
         # path
@@ -44,7 +45,7 @@ class Enemy1(pygame.sprite.Sprite):
         return ((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2) ** 0.5
 
     #TODO ->
-    def intersect_walls(self):
+    def fov_line_blocked_by_wall(self):
         if self.path:
             points = []
             for point in self.path:
@@ -52,15 +53,11 @@ class Enemy1(pygame.sprite.Sprite):
                 y = (point.y * self.cell_size) + self.cell_size // 2
                 points.append((x, y))
 
-            intersect = False
+            line = (points[0], points[-1])
+            return any(wall.rect.clipline(line) for wall in self.walls)
             # check fov intersection
-            for wall in self.walls:
-                intersect = wall.rect.clipline(points[0], points[-1])
-
-            if intersect:
-                pygame.draw.line(self.screen, 'green', points[0], points[-1])
-            else:
-                pygame.draw.line(self.screen, 'blue', points[0], points[-1])
+            # color = "red" if any(wall.rect.clipline(line) for wall in self.walls) else "green"
+            # pygame.draw.line(self.screen, color, line[0], line[1])
 
     # call on rays pulse
     def find_path(self, player_pos):
@@ -90,9 +87,11 @@ class Enemy1(pygame.sprite.Sprite):
                 y = (point.y * self.cell_size) + self.cell_size // 2
                 points.append((x, y))
 
-            pygame.draw.lines(screen, 'red', False, points, 5)
+            pygame.draw.lines(screen, (0, 0, 255), False, points, 2)
 
-        self.intersect_walls()
+            fov_line = (points[0], points[-1])
+            color = "red" if any(wall.rect.clipline(fov_line) for wall in self.walls) else "green"
+            pygame.draw.line(self.screen, color, fov_line[0], fov_line[1])
 
     def create_path_points_rects(self):
         if self.path:
@@ -125,6 +124,10 @@ class Enemy1(pygame.sprite.Sprite):
             self.empty_path()
 
     def update(self, player: Player):
+        print(self.fov_line_blocked_by_wall())
+        if self.fov_line_blocked_by_wall() == False or self.seen_player:
+            self.speed = 0.5
+            self.seen_player = True
         self.pos += self.direction * self.speed
         self.path_point_reached()
         self.rect.center = self.pos
