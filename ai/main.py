@@ -4,7 +4,7 @@ import sys
 from pytmx import load_pygame, TiledMap
 
 from ai.map import Walls, test_pathfinding_grid
-from ai.enemy1 import Enemy1
+from ai.enemy import Enemy
 from enemy import Enemy, Enemies
 from player import Player
 
@@ -36,10 +36,9 @@ class Game:
         tmx_map = load_pygame("ai_pathfinding_tilemap.tmx")
         self.walls = Walls(self.screen, tmx_map)
 
-        self.player = Player((550, 100), self.walls)
-
         # self.enemies = Enemies(self.player, self.walls, self.screen)
-        self.enemy = Enemy1(test_pathfinding_grid, (250, 140), self.walls, self.screen)
+        self.enemies = Enemies(test_pathfinding_grid, self.walls)
+        self.player = Player((550, 100), self.walls, self.enemies)
 
     def run(self):
         while self.running:
@@ -50,9 +49,8 @@ class Game:
                 self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, self.colors['text']), (5, 5)
             )
 
-            self.screen.blit(self.enemy.image, self.enemy.rect)
-            self.enemy.update(self.player)
-            self.enemy.draw_path(self.screen)
+            self.enemies.draw(self.screen)
+            self.enemies.update(self.player)
 
             self.walls.draw(self.screen)
             self.walls.update()

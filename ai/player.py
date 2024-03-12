@@ -3,9 +3,11 @@ import math
 import pygame
 from pygame.sprite import Group
 
+from ai.map import Walls
+
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, walls):
+    def __init__(self, pos, walls: Walls, enemies: Group):
         super().__init__()
         self.image = pygame.Surface((10, 10))
         self.image.fill('green')
@@ -13,8 +15,9 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
         self.direction = pygame.math.Vector2()
-        self.speed = 1#1
+        self.speed = 4  # 1
 
+        self.enemies = enemies
         self.walls = walls
 
     def map_collide_with_player(self):
@@ -52,8 +55,10 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.rect.y += self.speed
 
+    def on_collide_with_enemy(self):
+        self.image.fill('red') if pygame.sprite.spritecollideany(self, self.enemies) else self.image.fill('green')
+
     def update(self, new_pos):
+        self.on_collide_with_enemy()
         self.move()
         self.input()
-
-
