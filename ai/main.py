@@ -50,7 +50,7 @@ class Game:
             )
 
             self.enemies.draw(self.screen)
-            self.enemies.update(self.player)
+            self.enemies.update(self.player, self.screen)
 
             self.walls.draw(self.screen)
             self.walls.update()
@@ -68,8 +68,6 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                self.enemy.find_path((self.player.rect.x, self.player.rect.y))
 
 
 if __name__ == '__main__':
