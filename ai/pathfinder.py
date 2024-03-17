@@ -74,6 +74,8 @@ class Pathfinder:
                 if rect.collidepoint(pos):
                     del self.path_points[0]
                     self.get_direction(pos)
+            end_path_point_reached = len(self.path_points) <= 1
+            return end_path_point_reached
         else:
             self.path = []
 

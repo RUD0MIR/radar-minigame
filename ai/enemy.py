@@ -8,13 +8,14 @@ from pygame import Surface
 from pygame.sprite import Group
 from shapely import Point
 
+from ai.line_fov import LineFov
 from ai.map import Walls, test_pathfinding_grid
 from ai.pathfinder import Pathfinder
 from ai.player import Player
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, default_pos, walls: Walls, group: Group):
+    def __init__(self, default_pos, patrol_points: list[tuple[int, int]], cell_size, group: Group):
 
         # basic
         super().__init__(group)
@@ -24,50 +25,27 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = pygame.Rect(default_pos, self.size)
         self.group = group
 
-        self.fov_radius = 20
         self.seen_player = False
-        self.walls = walls
 
         # movement
         self.pos = self.rect.center
-        self.actual_speed = 0
-        self.speed_const = random.choice([0.7, 0.8, 0.8, 0.9])
+        self.speed = random.choice([0.7, 0.8, 0.8, 0.9])
+        self.patrol_points = patrol_points
+        self.patrol_end_point_index = 0
+
+        # fov
+        self.fov = LineFov(20)
 
         # path
         self.path_modifier = random.uniform(-5, 5)
-        self.pathfinder = Pathfinder(10, test_pathfinding_grid, self.fov_radius, self.path_modifier)
-
+        self.pathfinder = Pathfinder(cell_size, test_pathfinding_grid, self.fov.radius, self.path_modifier)
         self.pathfinding_counter = 0
 
-    def fov_line_blocked_by_wall(self):
-        if self.pathfinder.path:
-            points = []
-            for point in self.pathfinder.path:
-                x = (point.x * self.pathfinder.cell_size) + self.pathfinder.cell_size // 2
-                y = (point.y * self.pathfinder.cell_size) + self.pathfinder.cell_size // 2
-                points.append((x, y))
-
-            line = (points[0], points[-1])
-            return any(wall.rect.clipline(line) for wall in self.walls)
-
-    def draw_fov_line(self, screen):
-        if self.pathfinder.path:
-            points = []
-            for point in self.pathfinder.path:
-                x = (point.x * self.pathfinder.cell_size) + self.pathfinder.cell_size // 2
-                y = (point.y * self.pathfinder.cell_size) + self.pathfinder.cell_size // 2
-                points.append((x, y))
-
-            fov_line = (points[0], points[-1])
-            color = "red" if any(wall.rect.clipline(fov_line) for wall in self.walls) else "green"
-            pygame.draw.line(screen, color, fov_line[0], fov_line[1])
-
-    def follow_path(self, player):
-        if self.fov_line_blocked_by_wall() == False or self.seen_player:
-            self.actual_speed = self.speed_const
+    def follow_player(self, player, walls: Walls):
+        if self.seen_player or self.fov.fov_line_blocked_by_wall(self.pathfinder, walls) == False:
             self.seen_player = True
 
-        self.pos += self.pathfinder.direction * self.actual_speed
+        self.pos += self.pathfinder.direction * self.speed
 
         self.rect.center = self.pos
         self.pathfinder.check_path_points_collision(self.pos)
@@ -85,29 +63,50 @@ class Enemy(pygame.sprite.Sprite):
 
         self.pathfinding_counter += 1
 
-    def update(self, player: Player, screen: Surface):
-        self.follow_path(player)
+    def follow_patrol(self):
+
+        self.pos += self.pathfinder.direction * self.speed
+
+        self.rect.center = self.pos
+        if self.pathfinder.check_path_points_collision(self.pos):
+            self.patrol_end_point_index = 1
+    #TODO patrol point changes, but movement stops
+        if self.pathfinding_counter > 10:
+            self.pathfinding_counter = 0
+        if self.pathfinding_counter == 10:
+            self.pathfinder.find_path(
+                (self.rect.centerx, self.rect.centery),
+                self.patrol_points[self.patrol_end_point_index]
+            )
+            print(self.patrol_points[self.patrol_end_point_index])
+        self.pathfinder.get_direction(self.pos)
+        self.pathfinding_counter += 1
+
+    def update(self, player: Player, screen: Surface, walls: Walls):
+        if not self.seen_player:
+            self.follow_patrol()
+        else:
+            self.follow_player(player, walls)
         # self.draw_fov_line(screen)
         # self.pathfinder.draw_path(screen)
 
 
 class Enemies(pygame.sprite.Group):
-    def __init__(self, matrix, walls: Walls):
+    def __init__(self, matrix, cell_size):
         super().__init__()
         self.matrix = matrix
-        self.walls = walls
+        self.cell_size = cell_size
         self.en_positions = [
-            (45 * 10, 33 * 10),
-            (40 * 10, 26 * 10),
-            (41 * 10, 22 * 10)
+            (45 * cell_size, 33 * cell_size),
+            # (40 * 10, 26 * 10),
+            # (41 * 10, 22 * 10)
         ]
         self.en_default_paths = [
-
-            [Point(6, 29), Point(1, 29)]
+            [(36 * cell_size, 20 * cell_size), (49 * cell_size, 38 * cell_size)]
         ]
 
         self.generate_enemies()
 
     def generate_enemies(self):
         for i in range(len(self.en_positions)):
-            Enemy(self.en_positions[i], self.walls, self)
+            Enemy(self.en_positions[i], self.en_default_paths[i], self.cell_size, self)

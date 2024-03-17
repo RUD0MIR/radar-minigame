@@ -37,7 +37,7 @@ class Game:
         self.walls = Walls(self.screen, tmx_map)
 
         # self.enemies = Enemies(self.player, self.walls, self.screen)
-        self.enemies = Enemies(test_pathfinding_grid, self.walls)
+        self.enemies = Enemies(test_pathfinding_grid, 10)
         self.player = Player((550, 100), self.walls, self.enemies)
 
     def run(self):
@@ -50,7 +50,7 @@ class Game:
             )
 
             self.enemies.draw(self.screen)
-            self.enemies.update(self.player, self.screen)
+            self.enemies.update(self.player, self.screen, self.walls)
 
             self.walls.draw(self.screen)
             self.walls.update()
