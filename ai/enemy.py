@@ -12,6 +12,7 @@ from ai.line_fov import LineFov
 from ai.map import Walls, test_pathfinding_grid
 from ai.pathfinder import Pathfinder
 from ai.player import Player
+from display_log import logd
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -31,10 +32,10 @@ class Enemy(pygame.sprite.Sprite):
         self.pos = self.rect.center
         self.speed = random.choice([0.7, 0.8, 0.8, 0.9])
         self.patrol_points = patrol_points
-        self.patrol_end_point_index = 0
+        self.moving_forward_on_patrol = True
 
         # fov
-        self.fov = LineFov(20)
+        self.fov = LineFov(150)
 
         # path
         self.path_modifier = random.uniform(-5, 5)
@@ -42,9 +43,6 @@ class Enemy(pygame.sprite.Sprite):
         self.pathfinding_counter = 0
 
     def follow_player(self, player, walls: Walls):
-        if self.seen_player or self.fov.fov_line_blocked_by_wall(self.pathfinder, walls) == False:
-            self.seen_player = True
-
         self.pos += self.pathfinder.direction * self.speed
 
         self.rect.center = self.pos
@@ -63,32 +61,31 @@ class Enemy(pygame.sprite.Sprite):
 
         self.pathfinding_counter += 1
 
-    def follow_patrol(self):
-
+    def follow_patrol(self, walls: Walls, player_pos):
         self.pos += self.pathfinder.direction * self.speed
-
         self.rect.center = self.pos
         if self.pathfinder.check_path_points_collision(self.pos):
-            self.patrol_end_point_index = 1
-    #TODO patrol point changes, but movement stops
+            self.moving_forward_on_patrol = not self.moving_forward_on_patrol
         if self.pathfinding_counter > 10:
             self.pathfinding_counter = 0
         if self.pathfinding_counter == 10:
             self.pathfinder.find_path(
                 (self.rect.centerx, self.rect.centery),
-                self.patrol_points[self.patrol_end_point_index]
+                self.patrol_points[0] if self.moving_forward_on_patrol else self.patrol_points[1]
             )
-            print(self.patrol_points[self.patrol_end_point_index])
         self.pathfinder.get_direction(self.pos)
         self.pathfinding_counter += 1
 
     def update(self, player: Player, screen: Surface, walls: Walls):
-        if not self.seen_player:
-            self.follow_patrol()
+        self_pos = self.rect.centerx, self.rect.centery
+        player_pos = player.rect.centerx, player.rect.centery
+        if self.seen_player or self.fov.fov_line_blocked_by_wall(self_pos, player_pos, walls) == False:
+            self.seen_player = True
+            if not self.fov.radius_exceeded(self_pos, player_pos):
+                self.follow_player(player, walls)
         else:
-            self.follow_player(player, walls)
-        # self.draw_fov_line(screen)
-        # self.pathfinder.draw_path(screen)
+            self.follow_patrol(walls, player_pos)
+        # self.fov.draw_fov_line(screen, walls)
 
 
 class Enemies(pygame.sprite.Group):

@@ -5,6 +5,7 @@ from pytmx import load_pygame, TiledMap
 
 from ai.map import Walls, test_pathfinding_grid
 from ai.enemy import Enemy
+from display_log import logd
 from enemy import Enemy, Enemies
 from player import Player
 
@@ -54,6 +55,8 @@ class Game:
 
             self.walls.draw(self.screen)
             self.walls.update()
+
+
 
             # self.enemies.draw(self.screen)
             # self.enemies.update((self.player.rect.x, self.player.rect.y))

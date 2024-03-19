@@ -17,6 +17,7 @@ class Pathfinder:
         self.path_modifier = path_modifier
 
         self.fov_radius = fov_radius
+        self.h = None
         self.direction = pygame.math.Vector2(0, 0)
 
     def randomized_manhattan(self, dx, dy) -> float:
@@ -56,17 +57,17 @@ class Pathfinder:
         end_x, end_y = end_pos[0] // self.cell_size, end_pos[1] // self.cell_size
         end = self.grid.node(end_x, end_y)
 
-        h = self.calculate_h_value((start_x, start_y), (end_x, end_y))
-        if h <= self.fov_radius:
-            # path
-            finder = AStarFinder(
-                heuristic=self.randomized_manhattan,
-                diagonal_movement=DiagonalMovement.always
-            )
+        self.h = self.calculate_h_value((start_x, start_y), (end_x, end_y))
+        # if h <= self.fov_radius:
+        # path
+        finder = AStarFinder(
+            heuristic=self.randomized_manhattan,
+            diagonal_movement=DiagonalMovement.always
+        )
 
-            self.path = finder.find_path(start, end, self.grid)[0]
-            self.grid.cleanup()
-            self.create_path_points_rects()
+        self.path = finder.find_path(start, end, self.grid)[0]
+        self.grid.cleanup()
+        self.create_path_points_rects()
 
     def check_path_points_collision(self, pos):
         if self.path_points:
