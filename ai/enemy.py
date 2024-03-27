@@ -1,18 +1,13 @@
 import random
 
 import pygame
-from pathfinding.core.diagonal_movement import DiagonalMovement
-from pathfinding.core.grid import Grid
-from pathfinding.finder.a_star import AStarFinder
 from pygame import Surface
 from pygame.sprite import Group
-from shapely import Point
 
 from ai.line_fov import LineFov
 from ai.map import Walls, test_pathfinding_grid
 from ai.pathfinder import Pathfinder
 from ai.player import Player
-from display_log import logd
 
 
 class Enemy(pygame.sprite.Sprite):

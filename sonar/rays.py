@@ -3,9 +3,11 @@ import math
 import pygame
 from pygame.sprite import Group
 
+from sonar.map import Walls
+
 
 class Ray(pygame.sprite.Sprite):
-    def __init__(self, start_pos, angle, group: Group, walls: Group):
+    def __init__(self, start_pos, angle, group: Group, walls: Walls):
         super().__init__(group)
 
         self.start_pos = start_pos
@@ -52,8 +54,9 @@ class Rays(pygame.sprite.Group):
     def __init__(self, surface, player_pos, walls):
         super().__init__()
         self.surface = surface
-
         self.walls = walls
+        self.rays_max_length = 200
+        self.nearby_walls = walls.get_nearby_walls(player_pos, self.rays_max_length)
 
         self.rays_count = 360
         self.rays_len = 0
@@ -61,16 +64,16 @@ class Rays(pygame.sprite.Group):
 
     def generate_rays(self, player_pos):
         for i in range(self.rays_count):
-            Ray(player_pos, i, self, self.walls)
+            Ray(player_pos, i, self, self.nearby_walls)
 
     def custom_update(self, player_pos):
-        if self.rays_len >= 400:
+        if self.rays_len >= self.rays_max_length:
             if len(self.sprites()) == self.rays_count * 2:
                 for i in range(self.rays_count):
                     self.remove(self.sprites()[i])
+                self.nearby_walls = self.walls.get_nearby_walls(player_pos, self.rays_max_length)
             self.rays_len = 0
             self.generate_rays(player_pos)
-
         else:
             self.rays_len += 4
             for ray in self.sprites():

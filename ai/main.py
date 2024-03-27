@@ -4,9 +4,9 @@ import sys
 from pytmx import load_pygame, TiledMap
 
 from ai.map import Walls, test_pathfinding_grid
-from ai.enemy import Enemy
+from ai.enemy import Enemy, Enemies
 from display_log import logd
-from enemy import Enemy, Enemies
+
 from player import Player
 
 

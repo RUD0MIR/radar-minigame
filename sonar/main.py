@@ -7,6 +7,8 @@ from camera import CameraGroup
 from map import Wall, Walls, Markers
 from player import Player
 from rays import Rays
+from sonar.enemy import Enemies
+from sonar.res.cave import matrix
 
 
 # TODO add rays to camera
@@ -44,33 +46,45 @@ class Game:
         self.kpk = pygame.image.load(f"res/kpk.png").convert_alpha()
 
         # objects
-        tmx_map = load_pygame("res/cave.tmx")
+        tmx_map = load_pygame("res/cave_tiled.tmx")
         self.walls = Walls(self.screen, tmx_map)
 
         self.camera_group = CameraGroup()
 
-        self.initial_player_position = [220, 1000]
-        self.player = Player(self.initial_player_position, self.walls, self.camera_group)
+        print(matrix.cave_grid)
+
+        self.enemies = Enemies(matrix.cave_grid, 10)
+
+        self.initial_player_position = [60, 840]
+        self.player = Player(self.initial_player_position, self.walls, self.enemies, self.camera_group)
 
         self.map_graphics = Markers(self.screen, tmx_map, self.player)
+        # TODO optimize rays
         self.rays = Rays(self.screen, self.initial_player_position, self.walls)
 
     def run(self):
         while self.running:
             self.clock.tick(self.fps)
             self.handle_input()
-            self.rays.custom_update(self.player.rect)
-            self.map_graphics.update(self.player)
 
-            self.camera_group.update()
-            self.camera_group.custom_draw(self.player, [self.walls, self.rays, self.map_graphics])
+            self.draw()
+            self.update()
 
-            self.screen.blit(
-                self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, self.colors['text']), (5, 5)
-            )
-            # self.screen.blit(pygame.transform.scale(self.render_surface, self.screen_dimensions), (0, 0))
-            pygame.display.update()
-            self.screen.fill(self.colors['background'])
+    def draw(self):
+        self.camera_group.custom_draw(self.player, [self.walls, self.map_graphics, self.rays, self.enemies])
+
+        self.screen.blit(
+            self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, self.colors['text']), (5, 5)
+        )
+
+    def update(self):
+        self.map_graphics.update(self.player)
+        self.camera_group.update()
+        self.enemies.update(self.player, self.screen, self.walls)
+        self.rays.custom_update(self.player.rect.center)
+
+        pygame.display.update()
+        self.screen.fill(self.colors['background'])
 
     def handle_input(self):
         for event in pygame.event.get():

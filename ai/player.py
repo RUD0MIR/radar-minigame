@@ -12,7 +12,6 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface((10, 10))
         self.image.fill('green')
         self.rect = self.image.get_rect(center=pos)
-        self.mask = pygame.mask.from_surface(self.image)
 
         self.direction = pygame.math.Vector2()
         self.speed = 1 # 1
