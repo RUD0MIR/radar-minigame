@@ -3,23 +3,22 @@ import math
 import pygame
 from pygame.sprite import Group
 
+from display_log import logd
+from sonar import const
 from sonar.map import Walls
 
 
 class Ray(pygame.sprite.Sprite):
     def __init__(self, start_pos, angle, group: Group, walls: Walls):
         super().__init__(group)
-
         self.start_pos = start_pos
         self.angle = angle
-        self.rect_pos = start_pos
-        self.def_color = '#0f0f0f'
-        self.hit_color = '#6a8534'
+        # self.def_color = 'red'
+        self.def_color = const.black
+        self.hit_color = const.dark_green
         self.alpha = 255
-
         self.walls = walls
-
-        self.rect = pygame.Rect(self.rect_pos[0], self.rect_pos[1], 3, 3)
+        self.rect = pygame.Rect(start_pos[0], start_pos[1], 3, 3)
         self.image = pygame.Surface(
             (self.rect.width, self.rect.height)
         )
@@ -32,11 +31,10 @@ class Ray(pygame.sprite.Sprite):
     '''
 
     def move_rect(self, ray_len):
-        self.rect_pos = (
+        rect_pos = (
             self.start_pos[0] + ray_len * math.cos(self.angle), self.start_pos[1] + ray_len * math.sin(self.angle)
         )
-
-        self.rect = pygame.Rect(self.rect_pos[0], self.rect_pos[1], 3, 3)
+        self.rect = pygame.Rect(rect_pos[0], rect_pos[1], 3, 3)
 
     def fade_image(self):
         self.alpha -= 3
@@ -55,10 +53,10 @@ class Rays(pygame.sprite.Group):
         super().__init__()
         self.surface = surface
         self.walls = walls
-        self.rays_max_length = 200
+        self.rays_max_length = 400
         self.nearby_walls = walls.get_nearby_walls(player_pos, self.rays_max_length)
 
-        self.rays_count = 360
+        self.rays_count = 372
         self.rays_len = 0
         self.generate_rays(player_pos)
 
@@ -67,14 +65,25 @@ class Rays(pygame.sprite.Group):
             Ray(player_pos, i, self, self.nearby_walls)
 
     def custom_update(self, player_pos):
-        if self.rays_len >= self.rays_max_length:
-            if len(self.sprites()) == self.rays_count * 2:
-                for i in range(self.rays_count):
-                    self.remove(self.sprites()[i])
-                self.nearby_walls = self.walls.get_nearby_walls(player_pos, self.rays_max_length)
-            self.rays_len = 0
-            self.generate_rays(player_pos)
-        else:
-            self.rays_len += 4
-            for ray in self.sprites():
-                ray.update(self.rays_len)
+        self.rays_len += 4
+        for ray in self.sprites():
+            ray.update(self.rays_len)
+
+    def clean(self, player_pos):
+        super().empty()
+        self.rays_len = 0
+        self.nearby_walls = self.walls.get_nearby_walls(player_pos, self.rays_max_length)
+        self.generate_rays(player_pos)
+
+# def custom_update(self, player_pos):
+#     if self.rays_len >= self.rays_max_length:
+#         if len(self.sprites()) == self.rays_count * 2:
+#             for i in range(self.rays_count):
+#                 self.remove(self.sprites()[i])
+#             self.nearby_walls = self.walls.get_nearby_walls(player_pos, self.rays_max_length)
+#         self.rays_len = 0
+#         self.generate_rays(player_pos)
+#     else:
+#         self.rays_len += 4
+#         for ray in self.sprites():
+#             ray.update(self.rays_len)

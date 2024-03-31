@@ -5,11 +5,11 @@ from pygame.sprite import Group
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, walls: Group, enemies: Group, group: Group):
+    def __init__(self, walls: Group, enemies: Group, group: Group):
         super().__init__(group)
         self.image = pygame.Surface((10, 10))
         self.image.fill('green')
-        self.rect = self.image.get_rect(center=pos)
+        self.rect = self.image.get_rect(center=(60, 840))
 
         self.direction = pygame.math.Vector2()
         self.speed = 1

@@ -8,6 +8,7 @@ from ai.enemy import Enemy, Enemies
 from display_log import logd
 
 from player import Player
+from sonar import const
 
 
 class Game:
@@ -16,13 +17,6 @@ class Game:
         # pygame.mouse.set_visible(False)
 
         self.running = True
-
-        # drawing related stuff
-        self.colors = {
-            'text': (231, 111, 81),
-            'background': '#0f0f0f',
-            'player': (244, 162, 97)
-        }
 
         self.font = pygame.font.SysFont('Arial', 20)
 
@@ -65,7 +59,7 @@ class Game:
             self.player.update(pygame.mouse.get_pos())
 
             pygame.display.update()
-            self.screen.fill(self.colors['background'])
+            self.screen.fill(const.transparent)
 
     def handle_input(self):
         for event in pygame.event.get():
