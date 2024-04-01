@@ -7,13 +7,10 @@ from camera import CameraGroup
 from display_log import logd
 from map import Wall, Walls, Markers
 from player import Player
-from rays import Rays
+from rays import RaysPulse
 from sonar import const
 from sonar.enemy import Enemies
 from util.util import invert_binary_matrix
-
-RAY_CLEAN_EVENT = 11
-RAY_CLEAN_EVENT_TIMER = 3500
 
 
 class Game:
@@ -50,10 +47,11 @@ class Game:
         self.player = Player(self.walls, self.enemies, self.camera_group)
 
         # self.map_graphics = Markers(self.screen, markers_layer, self.player)
-        self.rays = Rays(self.screen, self.player.rect.center, self.walls)
-
-        # timers
-        pygame.time.set_timer(RAY_CLEAN_EVENT, RAY_CLEAN_EVENT_TIMER)
+        self.rays_pulses = [
+            RaysPulse(self.player.rect.center, self.walls, const.dark_green),
+            RaysPulse(self.player.rect.center, self.walls, 'red')
+        ]
+        self.second_ray_pulse_delay_exceeded = False
 
     def run(self):
         while self.running:
@@ -64,7 +62,10 @@ class Game:
             self.update()
 
     def draw(self):
-        self.camera_group.custom_draw(self.player, [self.walls, self.rays, self.enemies])  # self.map_graphics,
+        self.camera_group.custom_draw(
+            self.player,
+            [self.walls, self.rays_pulses[0], self.rays_pulses[1], self.enemies]
+        )
 
         self.screen.blit(
             self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, 'orange'), (5, 5)
@@ -73,8 +74,8 @@ class Game:
     def update(self):
         # self.map_graphics.update(self.player)
         self.camera_group.update()
-        self.enemies.update(self.player, self.screen, self.rays, self.walls)
-        self.rays.custom_update(self.player.rect.center)
+        self.enemies.update(self.player, self.screen, self.rays_pulses, self.walls)
+        self.rays_pulses[0].custom_update(self.player.rect.center)
 
         pygame.display.update()
         self.screen.fill(const.black)
@@ -83,8 +84,7 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            if event.type == RAY_CLEAN_EVENT:
-                self.rays.clean(self.player.rect.center)
+
 
 
 if __name__ == '__main__':
