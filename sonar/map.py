@@ -1,10 +1,7 @@
-import math
-
 import pygame
-from pygame import Surface, Rect, Vector2
+from pygame import Rect, Vector2
 from pygame.sprite import Group, Sprite
 
-from display_log import logd
 from sonar.const import black
 
 

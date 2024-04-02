@@ -3,8 +3,6 @@ import math
 import pygame
 from pygame.sprite import Group
 
-from display_log import logd
-from sonar import const
 from sonar.map import Walls
 
 
@@ -74,24 +72,9 @@ class RaysPulse(pygame.sprite.Group):
             Ray(player_pos, i, self, self.nearby_walls, self.color, self.rays_max_length)
 
     def custom_update(self, player_pos):
-        logd(len(self.sprites()))
         if len(self.sprites()) == 0:
             self.generate_rays(player_pos)
 
         self.rays_len += 4
         for ray in self.sprites():
             ray.update(self.rays_len)
-
-
-# def custom_update(self, player_pos):
-#     if self.rays_len >= self.rays_max_length:
-#         if len(self.sprites()) == self.rays_count * 2:
-#             for i in range(self.rays_count):
-#                 self.remove(self.sprites()[i])
-#             self.nearby_walls = self.walls.get_nearby_walls(player_pos, self.rays_max_length)
-#         self.rays_len = 0
-#         self.generate_rays(player_pos)
-#     else:
-#         self.rays_len += 4
-#         for ray in self.sprites():
-#             ray.update(self.rays_len)

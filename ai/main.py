@@ -1,11 +1,8 @@
-from pygame.locals import *
 import pygame
-import sys
-from pytmx import load_pygame, TiledMap
+from pytmx import load_pygame
 
 from ai.map import Walls, test_pathfinding_grid
-from ai.enemy import Enemy, Enemies
-from display_log import logd
+from ai.enemy import Enemies
 
 from player import Player
 from sonar import const

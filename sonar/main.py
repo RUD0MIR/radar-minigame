@@ -1,11 +1,8 @@
-from pygame.locals import *
 import pygame
-import sys
 from pytmx import load_pygame
 
 from camera import CameraGroup
-from display_log import logd
-from map import Wall, Walls, Markers
+from map import Walls
 from player import Player
 from rays import RaysPulse
 from sonar import const
@@ -51,7 +48,6 @@ class Game:
             RaysPulse(self.player.rect.center, self.walls, const.dark_green),
             RaysPulse(self.player.rect.center, self.walls, 'red')
         ]
-        self.second_ray_pulse_delay_exceeded = False
 
     def run(self):
         while self.running:
@@ -84,7 +80,6 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-
 
 
 if __name__ == '__main__':
