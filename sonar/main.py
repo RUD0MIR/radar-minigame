@@ -31,47 +31,54 @@ class Game:
 
         # TMX from Tiled
         walls_layer = load_pygame("res/cave_tiled.tmx").layers[0]
-        # markers_layer = load_pygame("res/cave_tiled.tmx").layers[1]
         cell_size = 10
         matrix = invert_binary_matrix(load_pygame("res/cave_tiled.tmx").layers[0].data)
 
+        # game objects
         self.walls = Walls(self.screen, walls_layer, cell_size)
 
         self.camera_group = CameraGroup()
 
         self.enemies = Enemies(matrix, cell_size)
 
-        self.player = Player(self.walls, self.enemies, self.camera_group)
+        self.player = Player((10, 10), self.walls, self.enemies, self.camera_group)
 
-        # self.map_graphics = Markers(self.screen, markers_layer, self.player)
         self.rays_pulses = [
             RaysPulse(self.player.rect.center, self.walls, const.dark_green),
-            RaysPulse(self.player.rect.center, self.walls, 'red')
+            RaysPulse(self.player.rect.center, self.walls, const.dark_green)
         ]
+        self.second_ray_pulse_delay_counter = 0
+        self.second_ray_pulse_delay = 90
 
     def run(self):
         while self.running:
             self.clock.tick(self.fps)
             self.handle_input()
-
             self.draw()
             self.update()
 
     def draw(self):
+        # draw all objects from camera class
         self.camera_group.custom_draw(
-            self.player,
+            self.player.rect,
             [self.walls, self.rays_pulses[0], self.rays_pulses[1], self.enemies]
         )
 
+        # in game fps display
         self.screen.blit(
             self.font.render('fps: ' + str(round(self.clock.get_fps(), 2)), True, 'orange'), (5, 5)
         )
 
     def update(self):
-        # self.map_graphics.update(self.player)
         self.camera_group.update()
-        self.enemies.update(self.player, self.screen, self.rays_pulses, self.walls)
+        self.enemies.update(self.player.rect.center, self.screen, self.rays_pulses, self.walls)
         self.rays_pulses[0].custom_update(self.player.rect.center)
+
+        # updating second RayPulse after delay, so they are not simultaneous
+        if self.second_ray_pulse_delay_counter > self.second_ray_pulse_delay:
+            self.rays_pulses[1].custom_update(self.player.rect.center)
+        if self.second_ray_pulse_delay_counter <= self.second_ray_pulse_delay:
+            self.second_ray_pulse_delay_counter += 1
 
         pygame.display.update()
         self.screen.fill(const.black)

@@ -5,11 +5,10 @@ from pygame.sprite import Group
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, walls: Group, enemies: Group, group: Group):
+    def __init__(self, size, walls: Group, enemies: Group, group: Group):
         super().__init__(group)
-        self.image = pygame.Surface((10, 10))
-        self.image.fill('green')
-        self.rect = self.image.get_rect(center=(60, 840))
+        self.image = pygame.Surface(size)
+        self.rect = self.image.get_rect(center=(30, 860))
 
         self.direction = pygame.math.Vector2()
         self.speed = 1
@@ -17,7 +16,7 @@ class Player(pygame.sprite.Sprite):
         self.enemies = enemies
         self.walls = walls
 
-    def input(self):
+    def handle_input(self):
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_w]:
@@ -36,14 +35,14 @@ class Player(pygame.sprite.Sprite):
 
     def move(self):
         self.rect.x += self.direction.x * self.speed
-        if self.map_collide_with_player():
+        if self.collide_with_walls():
             if self.direction.x > 0:
                 self.rect.x -= self.speed
             else:
                 self.rect.x += self.speed
 
         self.rect.y += self.direction.y * self.speed
-        if self.map_collide_with_player():
+        if self.collide_with_walls():
             if self.direction.y > 0:
                 self.rect.y -= self.speed
             else:
@@ -58,16 +57,16 @@ class Player(pygame.sprite.Sprite):
 
     # TODO add exit mechanic
 
-    def map_collide_with_player(self):
+    def collide_with_walls(self):
         return pygame.sprite.spritecollideany(self, self.walls)
 
-    def on_collide_with_enemy(self):
+    def collide_with_enemy(self):
         self.image.fill('red') if pygame.sprite.spritecollideany(self, self.enemies) else self.image.fill('green')
 
     def update(self):
-        self.on_collide_with_enemy()
+        self.collide_with_enemy()
         self.on_exit()
         self.move()
-        self.input()
+        self.handle_input()
 
 

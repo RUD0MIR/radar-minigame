@@ -23,7 +23,10 @@ class LineFov:
         pygame.draw.line(screen, color, fov_line[0], fov_line[1])
 
     def radius_exceeded(self, start_pos, end_pos,):
-        # sqrt{(x_2 - x_1) ^ 2 + (y_2 - y_1) ^ 2}
+        """
+        Checks if line from start_pos to end_pos greater than self radius by
+        using the formula: sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+        """
         line_length = math.sqrt((end_pos[0] - start_pos[0]) ** 2 + (end_pos[1] - start_pos[1]) ** 2)
         return line_length > self.radius
 

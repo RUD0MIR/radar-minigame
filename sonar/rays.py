@@ -3,6 +3,7 @@ import math
 import pygame
 from pygame.sprite import Group
 
+from sonar import const
 from sonar.map import Walls
 
 
@@ -13,10 +14,10 @@ class Ray(pygame.sprite.Sprite):
         self.angle = angle
         self.collided = False
         self.max_len = max_len
-        self.def_color = 'red'
-        # self.def_color = const.black
+        self.def_color = const.black
         self.hit_color = hit_color
-        self.alpha = 255
+        self.alpha = 360
+        self.alpha_decrease_rate = 2.5
         self.walls = walls
         self.rect = pygame.Rect(start_pos[0], start_pos[1], 3, 3)
         self.image = pygame.Surface(
@@ -24,25 +25,24 @@ class Ray(pygame.sprite.Sprite):
         )
         self.image.fill(self.def_color)
 
-    '''
-    calculating ray end point with these formulas
-    x = x0 + R * cos(a)
-    y = y0 + R * sin(a)
-    '''
-
     def move_rect(self, ray_len):
+        """
+        calculating ray end point with these formulas
+        x = x0 + R * cos(a)
+        y = y0 + R * sin(a)
+        """
         rect_pos = (
             self.start_pos[0] + ray_len * math.cos(self.angle), self.start_pos[1] + ray_len * math.sin(self.angle)
         )
         self.rect = pygame.Rect(rect_pos[0], rect_pos[1], 3, 3)
 
     def fade_image(self):
-        self.alpha -= 3
+        self.alpha -= self.alpha_decrease_rate
         self.image.fill(self.hit_color)
         self.image.set_alpha(self.alpha)
 
     def update(self, ray_len):
-        if self.alpha == 0 or (not self.collided and ray_len >= self.max_len):
+        if self.alpha <= 0 or (not self.collided and ray_len >= self.max_len):
             self.kill()
 
         if self.collided or pygame.sprite.spritecollideany(self, self.walls):
@@ -59,8 +59,9 @@ class RaysPulse(pygame.sprite.Group):
         self.rays_max_length = 470
         self.nearby_walls = walls.get_nearby_walls(player_pos, self.rays_max_length)
 
-        self.rays_count = 360
+        self.rays_count = 220
         self.rays_len = 0
+        self.rays_speed = 6
         self.color = color
 
         self.generate_rays(player_pos)
@@ -75,6 +76,6 @@ class RaysPulse(pygame.sprite.Group):
         if len(self.sprites()) == 0:
             self.generate_rays(player_pos)
 
-        self.rays_len += 4
+        self.rays_len += self.rays_speed
         for ray in self.sprites():
             ray.update(self.rays_len)
