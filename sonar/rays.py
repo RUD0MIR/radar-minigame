@@ -27,7 +27,7 @@ class Ray(pygame.sprite.Sprite):
 
     def move_rect(self, ray_len):
         """
-        calculating ray end point with these formulas
+        moves ray rect along a linear trajectory, which is calculated by the formulas:
         x = x0 + R * cos(a)
         y = y0 + R * sin(a)
         """

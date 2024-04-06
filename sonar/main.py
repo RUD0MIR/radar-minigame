@@ -30,9 +30,9 @@ class Game:
         self.kpk = pygame.image.load(f"res/kpk.png").convert_alpha()
 
         # TMX from Tiled
-        walls_layer = load_pygame("res/cave_tiled.tmx").layers[0]
+        walls_layer = load_pygame("res/cave_map.tmx").layers[0]
         cell_size = 10
-        matrix = invert_binary_matrix(load_pygame("res/cave_tiled.tmx").layers[0].data)
+        matrix = invert_binary_matrix(load_pygame("res/cave_map.tmx").layers[0].data)
 
         # game objects
         self.walls = Walls(self.screen, walls_layer, cell_size)
