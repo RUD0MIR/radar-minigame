@@ -42,6 +42,17 @@ class Walls(pygame.sprite.Group):
         nearby_walls.add([wall for wall in self.walls if Vector2(wall.rect.center).distance_to(Vector2(pos)) <= radius])
         return nearby_walls
 
+    def combine_squares(self, squares):
+        rectangles = []
+        for square in squares:
+            if not any([pygame.Rect(square.x, square.y - square.size, square.size, square.size) in rect for rect in
+                        rectangles]):
+                rectangles.append(pygame.Rect(square.x, square.y - square.size, square.size, square.size))
+            if not any([pygame.Rect(square.x - square.size, square.y, square.size, square.size) in rect for rect in
+                        rectangles]):
+                rectangles.append(pygame.Rect(square.x - square.size, square.y, square.size, square.size))
+        return rectangles
+
 
 class Marker(pygame.sprite.Sprite):
     def __init__(self, rect: Rect, group: Group):
