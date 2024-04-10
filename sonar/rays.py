@@ -61,7 +61,7 @@ class RaysPulse(pygame.sprite.Group):
 
         self.rays_count = 220
         self.rays_len = 0
-        self.rays_speed = 6
+        self.rays_speed = 7
         self.color = color
 
         self.generate_rays(player_pos)
