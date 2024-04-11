@@ -24,17 +24,10 @@ class Walls(pygame.sprite.Group):
         self.tmx_layer = tmx_layer
         self.tiles = []
         self.get_tiles_from_tmx()
-        self.get_merged_walls_y()
-        print(len(self.tiles))
-        print(len(self.sprites()))
-        print(len(self.walls))
-
-
-    # def get_walls_from_tmx(self):
-    #     for obj in self.tmx_layer.objects:
-    #         if obj.type != 'marker':
-    #             wall = Wall(pygame.Rect(obj.x, obj.y, obj.width, obj.height), self)
-    #             self.walls.append(wall)
+        self.get_merged_walls()
+        print(f"tiles: {len(self.tiles)}")
+        print(f"sprites: {len(self.sprites())}")
+        print(f"walls: {len(self.walls)}")
 
     def get_tiles_from_tmx(self):
         for x, y, surf in self.tmx_layer.tiles():
@@ -42,30 +35,55 @@ class Walls(pygame.sprite.Group):
             rect = pygame.Rect(pos, (self.grid_cell_size, self.grid_cell_size))
             self.tiles.append(rect)
 
+    def get_walls_from_tmx(self):
+        for obj in self.tmx_layer.objects:
+            if obj.type != 'marker':
+                wall = Wall(pygame.Rect(obj.x, obj.y, obj.width, obj.height), self)
+                self.walls.append(wall)
+
     def get_nearby_walls(self, pos, radius):
         nearby_walls = Group()
         nearby_walls.add([wall for wall in self.walls if Vector2(wall.rect.center).distance_to(Vector2(pos)) <= radius])
         return nearby_walls
 
-    def get_merged_walls_y(self):
-        merged_tiles = []
+    def get_merged_walls(self):
+        merged_squares = []
         for i in range(len(self.tiles)):
-            if self.tiles[i] in merged_tiles:
+            # if tile is already merged, iteration is skipped
+            if self.tiles[i] in merged_squares:
                 continue
 
-            next_offset = 20
-            current_rect = [self.tiles[i]]
+            offset_x = self.grid_cell_size
+            x_rect = [self.tiles[i]]
 
+            offset_y = self.grid_cell_size
+            y_rect = [self.tiles[i]]
+
+            # adding nearby tiles (by x) to x_rect
             for j in range(len(self.tiles)):
-                next_square_nearby = self.tiles[i].y + next_offset == self.tiles[j].y and self.tiles[i].x == self.tiles[j].x
+                next_square_nearby = self.tiles[i].x + offset_x == self.tiles[j].x and self.tiles[i].y == self.tiles[j].y
                 if next_square_nearby:
-                    current_rect.append(self.tiles[j])
-                    merged_tiles.append(self.tiles[j])
-                    next_offset += 20
+                    x_rect.append(self.tiles[j])
+                    offset_x += self.grid_cell_size
 
-            merged_rect = Rect(current_rect[0].x, current_rect[0].y, 20, len(current_rect) * 20)
-            self.walls.append(Wall(merged_rect, self))
-            current_rect.clear()
+            # adding nearby tiles (by y) to y_rect
+            for l in range(len(self.tiles)):
+                next_square_nearby = self.tiles[i].y + offset_y == self.tiles[l].y and self.tiles[i].x == self.tiles[l].x
+                if next_square_nearby:
+                    y_rect.append(self.tiles[l])
+                    offset_y += self.grid_cell_size
+
+            # merge bigger list of tiles to one rect and generate corresponding Wall
+            if len(y_rect) > len(x_rect):
+                merged_rect = Rect(y_rect[0].x, y_rect[0].y, self.grid_cell_size, len(y_rect) * self.grid_cell_size)
+                self.walls.append(Wall(merged_rect, self))
+                for square in y_rect:
+                    merged_squares.append(square)
+            else:
+                merged_rect = Rect(x_rect[0].x, x_rect[0].y, len(x_rect) * self.grid_cell_size, self.grid_cell_size)
+                self.walls.append(Wall(merged_rect, self))
+                for square in x_rect:
+                    merged_squares.append(square)
 
 
 class Marker(pygame.sprite.Sprite):
