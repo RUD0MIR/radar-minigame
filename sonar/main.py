@@ -30,7 +30,7 @@ class Game:
         self.kpk = pygame.image.load(f"res/kpk.png").convert_alpha()
 
         # TMX from Tiled
-        walls_layer = load_pygame("res/cave_map.tmx").layers[0]
+        walls_layer = load_pygame("res/cave_map.tmx").layers
         cell_size = 10
         matrix = invert_binary_matrix(load_pygame("res/cave_map.tmx").layers[0].data)
 
@@ -73,6 +73,7 @@ class Game:
         self.camera_group.update()
         self.enemies.update(self.player.rect.center, self.screen, self.rays_pulses, self.walls)
         self.rays_pulses[0].custom_update(self.player.rect.center)
+        self.walls.update(self.rays_pulses)
 
         # updating second RayPulse after delay, so they are not simultaneous
         if self.second_ray_pulse_delay_counter > self.second_ray_pulse_delay:

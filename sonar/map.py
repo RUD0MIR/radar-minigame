@@ -2,40 +2,84 @@ import pygame
 from pygame import Rect, Vector2
 from pygame.sprite import Group, Sprite
 
+from sonar import const
 from sonar.const import black
 
 
 class Wall(pygame.sprite.Sprite):
-    def __init__(self, rect: Rect, group: Group):
+    def __init__(self, rect: Rect, group: Group, is_filled: bool):
         super().__init__(group)
         self.rect = rect
-        self.image = pygame.Surface((self.rect.width, self.rect.height))
+        self.image = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
         # self.image.fill('white')
         self.image.fill(black)
 
+        self.is_filled = is_filled
+
+        self.alpha = 0
+        self.alpha_decrease_rate = 1.5
+        self.alpha_counter = -1
+        self.alpha_counter_max_value = 150
+        self.image.set_alpha(self.alpha)
+
+        if self.is_filled:
+            self.image.fill(const.green)
+
+    def animate_alpha(self, rays_pulses):
+        for ray_pulse in rays_pulses:
+            if self.alpha == 200:
+                self.alpha -= self.alpha_decrease_rate
+            if pygame.sprite.spritecollide(self, ray_pulse, True):
+                self.alpha_counter = 0
+                self.alpha = 200
+
+        if self.alpha_counter >= self.alpha_counter_max_value:
+            self.alpha_counter = 0
+            self.alpha = 0
+            return
+
+        self.alpha -= self.alpha_decrease_rate
+        self.alpha_counter += 1
+        self.image.set_alpha(self.alpha)
+
+    def update(self, rays_pulses):
+        if self.is_filled:
+            self.animate_alpha(rays_pulses)
+
 
 class Walls(pygame.sprite.Group):
-    def __init__(self, surface, tmx_layer, cell_size):
+    def __init__(self, surface, tmx_layers, cell_size):
         # self.color = (0, 0, 0, 0)
         super().__init__()
         self.surface = surface
         self.walls = []
         self.grid_cell_size = cell_size
-        self.tmx_layer = tmx_layer
+        self.tmx_layers = tmx_layers
         self.tiles = []
+        self.filled_tiles = []
+
         self.get_tiles_from_tmx()
-        self.get_merged_walls()
-        print(f"tiles: {len(self.tiles)}")
-        print(f"sprites: {len(self.sprites())}")
-        print(f"walls: {len(self.walls)}")
+        self.get_filled_tiles_from_tmx()
+        self.get_merged_walls(self.tiles, False)
+        self.get_merged_walls(self.filled_tiles, True)
 
     def get_tiles_from_tmx(self):
-        for x, y, surf in self.tmx_layer.tiles():
-            pos = (x * self.grid_cell_size, y * self.grid_cell_size)
-            rect = pygame.Rect(pos, (self.grid_cell_size, self.grid_cell_size))
-            self.tiles.append(rect)
+        for layer in self.tmx_layers:
+            if layer.name == 'default':
+                for x, y, surf in layer.tiles():
+                    pos = (x * self.grid_cell_size, y * self.grid_cell_size)
+                    rect = pygame.Rect(pos, (self.grid_cell_size, self.grid_cell_size))
+                    self.tiles.append(rect)
 
-    def get_walls_from_tmx(self):
+    def get_filled_tiles_from_tmx(self):
+        for layer in self.tmx_layers:
+            if layer.name == 'filled':
+                for x, y, surf in layer.tiles():
+                    pos = (x * self.grid_cell_size, y * self.grid_cell_size)
+                    rect = pygame.Rect(pos, (self.grid_cell_size, self.grid_cell_size))
+                    self.filled_tiles.append(rect)
+
+    def get_objects_from_tmx(self):
         for obj in self.tmx_layer.objects:
             if obj.type != 'marker':
                 wall = Wall(pygame.Rect(obj.x, obj.y, obj.width, obj.height), self)
@@ -46,42 +90,42 @@ class Walls(pygame.sprite.Group):
         nearby_walls.add([wall for wall in self.walls if Vector2(wall.rect.center).distance_to(Vector2(pos)) <= radius])
         return nearby_walls
 
-    def get_merged_walls(self):
+    def get_merged_walls(self, tiles, is_filled):
         merged_squares = []
-        for i in range(len(self.tiles)):
+        for i in range(len(tiles)):
             # if tile is already merged, iteration is skipped
-            if self.tiles[i] in merged_squares:
+            if tiles[i] in merged_squares:
                 continue
 
             offset_x = self.grid_cell_size
-            x_rect = [self.tiles[i]]
+            x_rect = [tiles[i]]
 
             offset_y = self.grid_cell_size
-            y_rect = [self.tiles[i]]
+            y_rect = [tiles[i]]
 
             # adding nearby tiles (by x) to x_rect
-            for j in range(len(self.tiles)):
-                next_square_nearby = self.tiles[i].x + offset_x == self.tiles[j].x and self.tiles[i].y == self.tiles[j].y
+            for j in range(len(tiles)):
+                next_square_nearby = tiles[i].x + offset_x == tiles[j].x and tiles[i].y == tiles[j].y
                 if next_square_nearby:
-                    x_rect.append(self.tiles[j])
+                    x_rect.append(tiles[j])
                     offset_x += self.grid_cell_size
 
             # adding nearby tiles (by y) to y_rect
-            for l in range(len(self.tiles)):
-                next_square_nearby = self.tiles[i].y + offset_y == self.tiles[l].y and self.tiles[i].x == self.tiles[l].x
+            for l in range(len(tiles)):
+                next_square_nearby = tiles[i].y + offset_y == tiles[l].y and tiles[i].x == tiles[l].x
                 if next_square_nearby:
-                    y_rect.append(self.tiles[l])
+                    y_rect.append(tiles[l])
                     offset_y += self.grid_cell_size
 
             # merge bigger list of tiles to one rect and generate corresponding Wall
             if len(y_rect) > len(x_rect):
                 merged_rect = Rect(y_rect[0].x, y_rect[0].y, self.grid_cell_size, len(y_rect) * self.grid_cell_size)
-                self.walls.append(Wall(merged_rect, self))
+                self.walls.append(Wall(merged_rect, self, is_filled))
                 for square in y_rect:
                     merged_squares.append(square)
             else:
                 merged_rect = Rect(x_rect[0].x, x_rect[0].y, len(x_rect) * self.grid_cell_size, self.grid_cell_size)
-                self.walls.append(Wall(merged_rect, self))
+                self.walls.append(Wall(merged_rect, self, is_filled))
                 for square in x_rect:
                     merged_squares.append(square)
 
