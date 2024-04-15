@@ -1,5 +1,4 @@
 import pygame
-from pytmx import load_pygame
 
 from camera import CameraGroup
 from map import Walls
@@ -7,7 +6,7 @@ from player import Player
 from rays import RaysPulse
 from sonar import const
 from sonar.enemy import Enemies
-from util.util import invert_binary_matrix
+from sonar.level import Level
 
 
 class Game:
@@ -27,22 +26,24 @@ class Game:
         self.screen_dimensions = (self.screen_width, self.screen_height)
         self.screen = pygame.display.set_mode(self.screen_dimensions)
 
-        self.kpk = pygame.image.load(f"res/kpk.png").convert_alpha()
+        self.kpk = pygame.image.load(f"res/img/kpk.png").convert_alpha()
 
-        # TMX from Tiled
-        walls_layer = load_pygame("res/cave_map.tmx").layers
-        cell_size = 10
-        matrix = invert_binary_matrix(load_pygame("res/cave_map.tmx").layers[0].data)
+        matrix_cell_size = 20
 
-        # game objects
-        self.walls = Walls(self.screen, walls_layer, cell_size)
+        # Levels
+        self.floo1 = Level((22 * matrix_cell_size, 20 * matrix_cell_size), "res/maps/1floor.tmx")
+        self.current_map = self.floo1
 
+        # Game objects
+        self.walls = Walls(self.screen, self.current_map.walls_layer, matrix_cell_size)
         self.camera_group = CameraGroup()
-
-        self.enemies = Enemies(matrix, cell_size)
-
-        self.player = Player((10, 10), self.walls, self.enemies, self.camera_group)
-
+        self.enemies = Enemies(self.current_map.matrix, matrix_cell_size)
+        self.player = Player(
+            (10, 10),
+            self.current_map.player_spawn_pos,
+            self.walls,
+            self.enemies, self.camera_group
+        )
         self.rays_pulses = [
             RaysPulse(self.player.rect.center, self.walls, const.dark_green),
             RaysPulse(self.player.rect.center, self.walls, const.dark_green)
@@ -71,7 +72,7 @@ class Game:
 
     def update(self):
         self.camera_group.update()
-        self.enemies.update(self.player.rect.center, self.screen, self.rays_pulses, self.walls)
+        # self.enemies.update(self.player.rect.center, self.screen, self.rays_pulses, self.walls)
         self.rays_pulses[0].custom_update(self.player.rect.center)
         self.walls.update(self.rays_pulses)
 

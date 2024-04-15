@@ -14,7 +14,7 @@ from sonar.rays import RaysPulse
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, matrix, default_pos, patrol_points: list[tuple[int, int]], cell_size, group: Group):
         super().__init__(group)
-        self.size = (10, 10)
+        self.size = (cell_size, cell_size)
         self.image = pygame.Surface(self.size, pygame.SRCALPHA)
         self.image.fill(const.green)
         self.rect = pygame.Rect(default_pos, self.size)
@@ -114,7 +114,7 @@ class Enemies(pygame.sprite.Group):
         self.cell_size = cell_size
         self.en_positions = [
             (26 * cell_size, 85 * cell_size),
-            (68 * 10, 53 * 10),
+            (68 * cell_size, 53 * cell_size),
             # (41 * 10, 22 * 10)
         ]
         self.en_patrol_points = [

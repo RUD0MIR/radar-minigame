@@ -7,49 +7,22 @@ from sonar.const import black
 
 
 class Wall(pygame.sprite.Sprite):
-    def __init__(self, rect: Rect, group: Group, is_filled: bool):
+    def __init__(self, rect: Rect, group: Group):
         super().__init__(group)
         self.rect = rect
         self.image = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
-        # self.image.fill('white')
-        self.image.fill(black)
-
-        self.is_filled = is_filled
+        self.image.fill('white')
+        # self.image.fill(black)
 
         self.alpha = 0
-        self.alpha_decrease_rate = 1.5
+        self.alpha_decrease_rate = 0.5
         self.alpha_counter = -1
         self.alpha_counter_max_value = 150
         self.image.set_alpha(self.alpha)
 
-        if self.is_filled:
-            self.image.fill(const.green)
-
-    def animate_alpha(self, rays_pulses):
-        for ray_pulse in rays_pulses:
-            if self.alpha == 200:
-                self.alpha -= self.alpha_decrease_rate
-            if pygame.sprite.spritecollide(self, ray_pulse, True):
-                self.alpha_counter = 0
-                self.alpha = 200
-
-        if self.alpha_counter >= self.alpha_counter_max_value:
-            self.alpha_counter = 0
-            self.alpha = 0
-            return
-
-        self.alpha -= self.alpha_decrease_rate
-        self.alpha_counter += 1
-        self.image.set_alpha(self.alpha)
-
-    def update(self, rays_pulses):
-        if self.is_filled:
-            self.animate_alpha(rays_pulses)
-
 
 class Walls(pygame.sprite.Group):
     def __init__(self, surface, tmx_layers, cell_size):
-        # self.color = (0, 0, 0, 0)
         super().__init__()
         self.surface = surface
         self.walls = []
@@ -59,25 +32,16 @@ class Walls(pygame.sprite.Group):
         self.filled_tiles = []
 
         self.get_tiles_from_tmx()
-        self.get_filled_tiles_from_tmx()
         self.get_merged_walls(self.tiles, False)
         self.get_merged_walls(self.filled_tiles, True)
 
     def get_tiles_from_tmx(self):
         for layer in self.tmx_layers:
-            if layer.name == 'default':
+            if layer.name == 'walls':
                 for x, y, surf in layer.tiles():
                     pos = (x * self.grid_cell_size, y * self.grid_cell_size)
                     rect = pygame.Rect(pos, (self.grid_cell_size, self.grid_cell_size))
                     self.tiles.append(rect)
-
-    def get_filled_tiles_from_tmx(self):
-        for layer in self.tmx_layers:
-            if layer.name == 'filled':
-                for x, y, surf in layer.tiles():
-                    pos = (x * self.grid_cell_size, y * self.grid_cell_size)
-                    rect = pygame.Rect(pos, (self.grid_cell_size, self.grid_cell_size))
-                    self.filled_tiles.append(rect)
 
     def get_objects_from_tmx(self):
         for obj in self.tmx_layer.objects:
@@ -120,12 +84,12 @@ class Walls(pygame.sprite.Group):
             # merge bigger list of tiles to one rect and generate corresponding Wall
             if len(y_rect) > len(x_rect):
                 merged_rect = Rect(y_rect[0].x, y_rect[0].y, self.grid_cell_size, len(y_rect) * self.grid_cell_size)
-                self.walls.append(Wall(merged_rect, self, is_filled))
+                self.walls.append(Wall(merged_rect, self))
                 for square in y_rect:
                     merged_squares.append(square)
             else:
                 merged_rect = Rect(x_rect[0].x, x_rect[0].y, len(x_rect) * self.grid_cell_size, self.grid_cell_size)
-                self.walls.append(Wall(merged_rect, self, is_filled))
+                self.walls.append(Wall(merged_rect, self))
                 for square in x_rect:
                     merged_squares.append(square)
 

@@ -5,10 +5,10 @@ from pygame.sprite import Group
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, size, walls: Group, enemies: Group, group: Group):
+    def __init__(self, size, spawn_pos, walls: Group, enemies: Group, group: Group):
         super().__init__(group)
-        self.image = pygame.Surface(size)
-        self.rect = self.image.get_rect(center=(30, 860))
+        self.image = pygame.Surface(size, pygame.SRCALPHA)
+        self.rect = self.image.get_rect(center=spawn_pos)
 
         self.direction = pygame.math.Vector2()
         self.speed = 1
@@ -61,7 +61,8 @@ class Player(pygame.sprite.Sprite):
         return pygame.sprite.spritecollideany(self, self.walls)
 
     def collide_with_enemy(self):
-        self.image.fill('red') if pygame.sprite.spritecollideany(self, self.enemies) else self.image.fill('green')
+        # TODO collide_with_enemy
+        pass
 
     def update(self):
         self.collide_with_enemy()

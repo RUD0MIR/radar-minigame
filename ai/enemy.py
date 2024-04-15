@@ -15,7 +15,7 @@ class Enemy(pygame.sprite.Sprite):
 
         # basic
         super().__init__(group)
-        self.size = (10, 10)
+        self.size = (cell_size, cell_size)
         self.image = pygame.Surface(self.size, pygame.SRCALPHA)
         self.image.fill('blue')
         self.rect = pygame.Rect(default_pos, self.size)
