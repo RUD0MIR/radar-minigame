@@ -5,7 +5,7 @@ from util.util import normalize_matrix
 
 class Level:
     """
-        Current level options
+    Current level options
     """
     def __init__(
             self,

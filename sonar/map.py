@@ -42,6 +42,9 @@ class Walls(pygame.sprite.Group):
         self.get_merged_walls(self.filled_tiles, True)
 
     def get_tiles_from_tmx(self):
+        """
+        converts tiles from tmx file on a layer 'walls' to Wall sprites using pytmx
+        """
         for layer in self.tmx_layers:
             if layer.name == 'walls':
                 for x, y, surf in layer.tiles():
@@ -49,18 +52,18 @@ class Walls(pygame.sprite.Group):
                     rect = pygame.Rect(pos, (self.grid_cell_size, self.grid_cell_size))
                     self.tiles.append(rect)
 
-    def get_objects_from_tmx(self):
-        for obj in self.tmx_layer.objects:
-            if obj.type != 'marker':
-                wall = Wall(pygame.Rect(obj.x, obj.y, obj.width, obj.height), self)
-                self.walls.append(wall)
-
     def get_nearby_walls(self, pos, radius):
+        """
+        returns list of walls within certain radius from pos
+        """
         nearby_walls = Group()
         nearby_walls.add([wall for wall in self.walls if Vector2(wall.rect.center).distance_to(Vector2(pos)) <= radius])
         return nearby_walls
 
     def get_merged_walls(self, tiles, is_filled):
+        """
+        merging nearby tiles to bigger ones, making less sprites overall
+        """
         merged_squares = []
         for i in range(len(tiles)):
             # if tile is already merged, iteration is skipped
