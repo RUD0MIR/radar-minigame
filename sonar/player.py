@@ -5,15 +5,15 @@ from pygame.sprite import Group
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, size, spawn_pos, walls: Group, enemies: Group, group: Group):
+    def __init__(self, size, spawn_pos, walls: Group, group: Group, color='blue'):
         super().__init__(group)
-        self.image = pygame.Surface(size, pygame.SRCALPHA)
+        self.image = pygame.Surface(size)
+        self.image.fill(color)
         self.rect = self.image.get_rect(center=spawn_pos)
 
         self.direction = pygame.math.Vector2()
         self.speed = 1
 
-        self.enemies = enemies
         self.walls = walls
 
     def handle_input(self):
@@ -48,25 +48,10 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.rect.y += self.speed
 
-    # TODO add exit mechanic
-    def on_exit(self):
-        pass
-
-    def exits_collide_with_player(self):
-        pass
-
-    # TODO add exit mechanic
-
     def collide_with_walls(self):
         return pygame.sprite.spritecollideany(self, self.walls)
 
-    def collide_with_enemy(self):
-        # TODO collide_with_enemy
-        pass
-
     def update(self):
-        self.collide_with_enemy()
-        self.on_exit()
         self.move()
         self.handle_input()
 

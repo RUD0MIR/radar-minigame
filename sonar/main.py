@@ -5,17 +5,18 @@ from map import Walls
 from player import Player
 from rays import RaysPulse
 from sonar import const
-from sonar.enemy import Enemies
 from sonar.level import Level
 
 
 class Game:
+    """
+    draws and updates all sprites
+    """
     def __init__(self):
         pygame.init()
         pygame.mouse.set_visible(False)
 
         self.running = True
-        self.debug = False
 
         self.font = pygame.font.SysFont('Arial', 20)
 
@@ -26,24 +27,25 @@ class Game:
         self.screen_dimensions = (self.screen_width, self.screen_height)
         self.screen = pygame.display.set_mode(self.screen_dimensions)
 
-        self.kpk = pygame.image.load(f"res/img/kpk.png").convert_alpha()
-
         matrix_cell_size = 20
 
         # Levels
-        self.floo1 = Level((22 * matrix_cell_size, 20 * matrix_cell_size), "res/maps/1floor.tmx")
+        self.floo1 = Level(
+            (22 * matrix_cell_size, 20 * matrix_cell_size),
+            "res/maps/1floor.tmx",
+        )
         self.current_map = self.floo1
 
         # Game objects
         self.walls = Walls(self.screen, self.current_map.walls_layer, matrix_cell_size)
         self.camera_group = CameraGroup()
-        self.enemies = Enemies(self.current_map.matrix, matrix_cell_size)
         self.player = Player(
             (10, 10),
             self.current_map.player_spawn_pos,
             self.walls,
-            self.enemies, self.camera_group
+            self.camera_group
         )
+
         self.rays_pulses = [
             RaysPulse(self.player.rect.center, self.walls, const.dark_green),
             RaysPulse(self.player.rect.center, self.walls, const.dark_green)
@@ -62,7 +64,7 @@ class Game:
         # draw all objects from camera class
         self.camera_group.custom_draw(
             self.player.rect,
-            [self.walls, self.rays_pulses[0], self.rays_pulses[1], self.enemies]
+            [self.walls, self.rays_pulses[0], self.rays_pulses[1]]
         )
 
         # in game fps display
@@ -72,7 +74,6 @@ class Game:
 
     def update(self):
         self.camera_group.update()
-        # self.enemies.update(self.player.rect.center, self.screen, self.rays_pulses, self.walls)
         self.rays_pulses[0].custom_update(self.player.rect.center)
         self.walls.update(self.rays_pulses)
 

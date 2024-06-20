@@ -8,6 +8,9 @@ from sonar.map import Walls
 
 
 class Ray(pygame.sprite.Sprite):
+    """
+    rectangle that change color on collision with walls
+    """
     def __init__(self, start_pos, angle, group: Group, walls: Walls, hit_color, max_len):
         super().__init__(group)
         self.start_pos = start_pos
@@ -53,6 +56,9 @@ class Ray(pygame.sprite.Sprite):
 
 
 class RaysPulse(pygame.sprite.Group):
+    """
+    generates and updates Rays(rectangles) positions
+    """
     def __init__(self, player_pos, walls, color):
         super().__init__()
         self.walls = walls
