@@ -14,14 +14,6 @@ class Wall(pygame.sprite.Sprite):
         super().__init__(group)
         self.rect = rect
         self.image = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
-        self.image.fill('white')
-        # self.image.fill(black)
-
-        self.alpha = 0
-        self.alpha_decrease_rate = 0.5
-        self.alpha_counter = -1
-        self.alpha_counter_max_value = 150
-        self.image.set_alpha(self.alpha)
 
 
 class Walls(pygame.sprite.Group):

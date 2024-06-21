@@ -31,7 +31,7 @@ class Game:
 
         # Levels
         self.floo1 = Level(
-            (22 * matrix_cell_size, 20 * matrix_cell_size),
+            (135 * matrix_cell_size, 41 * matrix_cell_size),
             "res/maps/1floor.tmx",
         )
         self.current_map = self.floo1
